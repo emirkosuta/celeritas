@@ -1,0 +1,22 @@
+mode: set
+github.com/emirkosuta/celeritas/render/render.go:35.111,38.37 2 1
+github.com/emirkosuta/celeritas/render/render.go:44.2,44.77 1 1
+github.com/emirkosuta/celeritas/render/render.go:39.12,40.36 1 1
+github.com/emirkosuta/celeritas/render/render.go:41.13,42.48 1 1
+github.com/emirkosuta/celeritas/render/render.go:47.102,49.16 2 1
+github.com/emirkosuta/celeritas/render/render.go:53.2,54.17 2 1
+github.com/emirkosuta/celeritas/render/render.go:58.2,59.16 2 1
+github.com/emirkosuta/celeritas/render/render.go:63.2,63.12 1 1
+github.com/emirkosuta/celeritas/render/render.go:49.16,51.3 1 1
+github.com/emirkosuta/celeritas/render/render.go:54.17,56.3 1 0
+github.com/emirkosuta/celeritas/render/render.go:59.16,61.3 1 0
+github.com/emirkosuta/celeritas/render/render.go:66.122,69.22 2 1
+github.com/emirkosuta/celeritas/render/render.go:75.2,76.17 2 1
+github.com/emirkosuta/celeritas/render/render.go:80.2,81.16 2 1
+github.com/emirkosuta/celeritas/render/render.go:86.2,86.46 1 1
+github.com/emirkosuta/celeritas/render/render.go:90.2,90.12 1 1
+github.com/emirkosuta/celeritas/render/render.go:69.22,71.3 1 1
+github.com/emirkosuta/celeritas/render/render.go:71.8,73.3 1 0
+github.com/emirkosuta/celeritas/render/render.go:76.17,78.3 1 0
+github.com/emirkosuta/celeritas/render/render.go:81.16,84.3 2 1
+github.com/emirkosuta/celeritas/render/render.go:86.46,89.3 2 0

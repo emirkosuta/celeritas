@@ -1,6 +1,7 @@
 package render
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
@@ -39,9 +40,8 @@ func (c *Render) Page(w http.ResponseWriter, r *http.Request, view string, varia
 		return c.GoPage(w, r, view, data)
 	case "jet":
 		return c.JetPage(w, r, view, variables, data)
-
 	}
-	return nil
+	return errors.New("Rendering engine '" + c.Renderer + "' is not supported")
 }
 
 func (c *Render) GoPage(w http.ResponseWriter, r *http.Request, view string, data interface{}) error {
