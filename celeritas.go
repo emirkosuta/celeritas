@@ -86,6 +86,10 @@ func (c *Celeritas) New(rootPath string) error {
 	c.config = config{
 		port:     os.Getenv("PORT"),
 		renderer: os.Getenv("RENDERER"),
+		database: databaseConfig{
+			database: os.Getenv("DATABASE_TYPE"),
+			dsn:      c.BuildDSN(),
+		},
 		cookie: cookieConfig{
 			name:     os.Getenv("COOKIE_NAME"),
 			lifetime: os.Getenv("COOKIE_LIFETIME"),
@@ -137,6 +141,8 @@ func (c *Celeritas) ListenAndServe() {
 		ReadTimeout:  30 * time.Second,
 		WriteTimeout: 600 * time.Second,
 	}
+
+	defer c.DB.Pool.Close()
 
 	c.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
 	err := srv.ListenAndServe()
