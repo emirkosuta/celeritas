@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"log"
 	"os"
 
 	"github.com/emirkosuta/celeritas"
@@ -14,10 +13,13 @@ const version = "1.0.0"
 var cel celeritas.Celeritas
 
 func main() {
+	var message string
 	arg1, arg2, arg3, err := validateInput()
 	if err != nil {
 		exitGracefully(err)
 	}
+
+	setup()
 
 	switch arg1 {
 	case "help":
@@ -26,9 +28,20 @@ func main() {
 	case "version":
 		color.Yellow("Application version: " + version)
 
+	case "make":
+		if arg2 == "" {
+			exitGracefully(errors.New("make requires a subcommand: (migration|model|handler)"))
+		}
+		err = doMake(arg2, arg3)
+		if err != nil {
+			exitGracefully(err)
+		}
+
 	default:
-		log.Println(arg2, arg3)
+		showHelp()
 	}
+
+	exitGracefully(nil, message)
 }
 
 func validateInput() (string, string, string, error) {
