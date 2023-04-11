@@ -76,14 +76,13 @@ func validateInput() (string, string, string, error) {
 }
 
 func exitGracefully(err error, msg ...string) {
-	showHelp()
-
 	message := ""
 	if len(msg) > 0 {
 		message = msg[0]
 	}
 
 	if err != nil {
+		showHelp()
 		color.Red("Error: %v\n", err)
 	}
 
