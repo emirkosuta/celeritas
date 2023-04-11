@@ -29,6 +29,15 @@ func doAuth() error {
 	}
 
 	// copy files over
+	err = copyFilefromTemplate("templates/data/user.go.txt", cel.RootPath+"/data/user.go")
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	err = copyFilefromTemplate("templates/data/token.go.txt", cel.RootPath+"/data/token.go")
+	if err != nil {
+		exitGracefully(err)
+	}
 
 	return nil
 }
