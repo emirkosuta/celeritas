@@ -88,6 +88,11 @@ func doMake(arg2, arg3 string) error {
 			exitGracefully(err)
 		}
 		color.Yellow("Created the model and migration.")
+	case "session":
+		err := doSessionTable()
+		if err != nil {
+			exitGracefully(err)
+		}
 	default:
 		return errors.New("make " + arg2 + " is not supported.")
 	}
