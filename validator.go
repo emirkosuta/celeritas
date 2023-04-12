@@ -49,6 +49,22 @@ func (v *Validation) Required(r *http.Request, fields ...string) {
 	}
 }
 
+// No more than x characters
+func (v *Validation) Max(r *http.Request, field string, max int) {
+	value := r.Form.Get(field)
+	if len(strings.TrimSpace(value)) > max {
+		v.AddError(field, "Should be no more than "+strconv.Itoa(max)+" characters")
+	}
+}
+
+// At least x characters
+func (v *Validation) Min(r *http.Request, field string, min int) {
+	value := r.Form.Get(field)
+	if len(strings.TrimSpace(value)) < min {
+		v.AddError(field, "Must be at least "+strconv.Itoa(min)+" characters")
+	}
+}
+
 func (v *Validation) Check(ok bool, key, message string) {
 	if !ok {
 		v.AddError(key, message)
