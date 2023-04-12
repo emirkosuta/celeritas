@@ -5,6 +5,7 @@ go 1.19
 require github.com/go-chi/chi/v5 v5.0.8
 
 require (
+	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect

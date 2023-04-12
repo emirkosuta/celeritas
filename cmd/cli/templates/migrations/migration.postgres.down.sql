@@ -1,1 +1,1 @@
--- drop table some_table;
+DROP TABLE $MIGRATIONNAME$;
