@@ -15,6 +15,9 @@ import (
 func doMake(arg2, arg3 string) error {
 
 	switch arg2 {
+	case "key":
+		rnd := cel.RandomString(32)
+		color.Yellow("32 character encyption key: %s", rnd)
 	case "migration":
 		err := makeMigration(arg3)
 		if err != nil {
