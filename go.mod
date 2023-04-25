@@ -5,11 +5,15 @@ go 1.19
 require github.com/go-chi/chi/v5 v5.0.8
 
 require (
+	github.com/alicebob/gopher-json v0.0.0-20200520072559-a9ecdc9d1d3a // indirect
+	github.com/alicebob/miniredis/v2 v2.30.2 // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
+	github.com/gomodule/redigo v1.8.9 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/iancoleman/strcase v0.2.0 // indirect
 	github.com/lib/pq v1.10.2 // indirect
+	github.com/yuin/gopher-lua v1.1.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 )
 
