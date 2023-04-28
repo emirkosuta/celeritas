@@ -10,17 +10,20 @@ import (
 
 	"github.com/CloudyKit/jet/v6"
 	"github.com/alexedwards/scs/v2"
+	"github.com/dgraph-io/badger/v3"
 	"github.com/emirkosuta/celeritas/cache"
 	"github.com/emirkosuta/celeritas/render"
 	"github.com/emirkosuta/celeritas/session"
 	"github.com/go-chi/chi/v5"
 	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
+	"github.com/robfig/cron/v3"
 )
 
 const version = "1.0.0"
 
 var myRedisCache *cache.RedisCache
+var myBadgerCache *cache.BadgerCache
 
 type Celeritas struct {
 	AppName       string
@@ -37,6 +40,7 @@ type Celeritas struct {
 	config        config
 	EncryptionKey string
 	Cache         cache.Cache
+	Scheduler     *cron.Cron
 }
 
 type config struct {
@@ -87,6 +91,18 @@ func (c *Celeritas) New(rootPath string) error {
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
 		myRedisCache = c.createClientRedisCache()
 		c.Cache = myRedisCache
+	}
+
+	if os.Getenv("CACHE") == "badger" {
+		myBadgerCache = c.createClientBadgerCache()
+		c.Cache = myBadgerCache
+
+		_, err = c.Scheduler.AddFunc("@daily", func() {
+			_ = myBadgerCache.Conn.RunValueLogGC(0.7)
+		})
+		if err != nil {
+			return err
+		}
 	}
 
 	c.InfoLog = infoLog
@@ -221,6 +237,13 @@ func (c *Celeritas) createClientRedisCache() *cache.RedisCache {
 	return &cacheClient
 }
 
+func (c *Celeritas) createClientBadgerCache() *cache.BadgerCache {
+	cacheClient := cache.BadgerCache{
+		Conn: c.createBadgerConn(),
+	}
+	return &cacheClient
+}
+
 func (c *Celeritas) createRedisPool() *redis.Pool {
 	return &redis.Pool{
 		MaxIdle:     50,
@@ -237,6 +260,14 @@ func (c *Celeritas) createRedisPool() *redis.Pool {
 			return err
 		},
 	}
+}
+
+func (c *Celeritas) createBadgerConn() *badger.DB {
+	db, err := badger.Open(badger.DefaultOptions(c.RootPath + "/tmp/badger"))
+	if err != nil {
+		return nil
+	}
+	return db
 }
 
 func (c *Celeritas) BuildDSN() string {
