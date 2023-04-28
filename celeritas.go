@@ -75,7 +75,37 @@ func (c *Celeritas) New(rootPath string) error {
 		return err
 	}
 
+	c.Scheduler = cron.New()
+
 	infoLog, errorLog := c.startLoggers()
+
+	c.InfoLog = infoLog
+	c.ErrorLog = errorLog
+	c.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
+	c.Version = version
+	c.RootPath = rootPath
+	c.Routes = c.routes().(*chi.Mux)
+	c.config = config{
+		port:     os.Getenv("PORT"),
+		renderer: os.Getenv("RENDERER"),
+		database: databaseConfig{
+			database: os.Getenv("DATABASE_TYPE"),
+			dsn:      c.BuildDSN(),
+		},
+		cookie: cookieConfig{
+			name:     os.Getenv("COOKIE_NAME"),
+			lifetime: os.Getenv("COOKIE_LIFETIME"),
+			persist:  os.Getenv("COOKIE_PERSIST"),
+			secure:   os.Getenv("COOKIE_SECURE"),
+			domain:   os.Getenv("COOKIE_DOMAIN"),
+		},
+		sessionType: os.Getenv("SESSION_TYPE"),
+		redis: redisConfig{
+			host:     os.Getenv("REDIS_HOST"),
+			password: os.Getenv("REDIS_PASSWORD"),
+			prefix:   os.Getenv("REDIS_PREFIX"),
+		},
+	}
 
 	// connect to database
 	if os.Getenv("DATABASE_TYPE") != "" {
@@ -107,34 +137,6 @@ func (c *Celeritas) New(rootPath string) error {
 		if err != nil {
 			return err
 		}
-	}
-
-	c.InfoLog = infoLog
-	c.ErrorLog = errorLog
-	c.Debug, _ = strconv.ParseBool(os.Getenv("DEBUG"))
-	c.Version = version
-	c.RootPath = rootPath
-	c.Routes = c.routes().(*chi.Mux)
-	c.config = config{
-		port:     os.Getenv("PORT"),
-		renderer: os.Getenv("RENDERER"),
-		database: databaseConfig{
-			database: os.Getenv("DATABASE_TYPE"),
-			dsn:      c.BuildDSN(),
-		},
-		cookie: cookieConfig{
-			name:     os.Getenv("COOKIE_NAME"),
-			lifetime: os.Getenv("COOKIE_LIFETIME"),
-			persist:  os.Getenv("COOKIE_PERSIST"),
-			secure:   os.Getenv("COOKIE_SECURE"),
-			domain:   os.Getenv("COOKIE_DOMAIN"),
-		},
-		sessionType: os.Getenv("SESSION_TYPE"),
-		redis: redisConfig{
-			host:     os.Getenv("REDIS_HOST"),
-			password: os.Getenv("REDIS_PASSWORD"),
-			prefix:   os.Getenv("REDIS_PREFIX"),
-		},
 	}
 
 	// create session
