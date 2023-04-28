@@ -24,6 +24,8 @@ const version = "1.0.0"
 
 var myRedisCache *cache.RedisCache
 var myBadgerCache *cache.BadgerCache
+var redisPool *redis.Pool
+var badgerConn *badger.DB
 
 type Celeritas struct {
 	AppName       string
@@ -91,11 +93,13 @@ func (c *Celeritas) New(rootPath string) error {
 	if os.Getenv("CACHE") == "redis" || os.Getenv("SESSION_TYPE") == "redis" {
 		myRedisCache = c.createClientRedisCache()
 		c.Cache = myRedisCache
+		redisPool = myRedisCache.Conn
 	}
 
 	if os.Getenv("CACHE") == "badger" {
 		myBadgerCache = c.createClientBadgerCache()
 		c.Cache = myBadgerCache
+		badgerConn = myBadgerCache.Conn
 
 		_, err = c.Scheduler.AddFunc("@daily", func() {
 			_ = myBadgerCache.Conn.RunValueLogGC(0.7)
@@ -192,7 +196,17 @@ func (c *Celeritas) ListenAndServe() {
 		WriteTimeout: 600 * time.Second,
 	}
 
-	defer c.DB.Pool.Close()
+	if c.DB.Pool != nil {
+		defer c.DB.Pool.Close()
+	}
+
+	if badgerConn != nil {
+		defer badgerConn.Close()
+	}
+
+	if redisPool != nil {
+		defer redisPool.Close()
+	}
 
 	c.InfoLog.Printf("Listening on port %s", os.Getenv("PORT"))
 	err := srv.ListenAndServe()
