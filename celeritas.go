@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/emirkosuta/celeritas/mailer"
 	"github.com/emirkosuta/celeritas/render"
 	"github.com/emirkosuta/celeritas/session"
+	"github.com/emirkosuta/celeritas/storage"
 	"github.com/go-chi/chi/v5"
 	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
@@ -44,6 +46,7 @@ type Celeritas struct {
 	EncryptionKey string
 	Cache         cache.Cache
 	Scheduler     *cron.Cron
+	Storage       storage.Storage
 	Mail          mailer.Mail
 }
 
@@ -59,7 +62,7 @@ type config struct {
 func (c *Celeritas) New(rootPath string) error {
 	pathConfig := initPaths{
 		rootPath:    rootPath,
-		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware"},
+		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware", "storage"},
 	}
 
 	err := c.Init(pathConfig)
@@ -175,6 +178,7 @@ func (c *Celeritas) New(rootPath string) error {
 
 	c.createRenderer()
 
+	c.Storage = c.createStorage()
 	c.Mail = c.createMailer()
 	go c.Mail.ListenForMail()
 
@@ -194,6 +198,12 @@ func (c *Celeritas) Init(p initPaths) error {
 
 // start the webserver
 func (c *Celeritas) ListenAndServe() {
+	// Create a file server to serve static files
+	fs := http.FileServer(http.Dir(c.Storage.BaseDir))
+
+	// Use the FileServer middleware to serve files from the static directory
+	c.Routes.Handle("/storage/*", http.StripPrefix("/storage/", fs))
+
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
 		ErrorLog:     c.ErrorLog,
@@ -269,6 +279,13 @@ func (c *Celeritas) createMailer() mailer.Mail {
 		APIUrl:      os.Getenv("MAILER_URL"),
 	}
 	return m
+}
+
+func (c *Celeritas) createStorage() storage.Storage {
+	storageClient := storage.Storage{
+		BaseDir: filepath.Join(c.RootPath, os.Getenv("STORAGE_PATH")),
+	}
+	return storageClient
 }
 
 func (c *Celeritas) createClientRedisCache() *cache.RedisCache {
