@@ -65,6 +65,7 @@ func showHelp() {
 	make auth							-	createas and runs migrations for authentication tables, and creates models and middleware
 	make handler <name>   - creates a stub handler in the handlers directory
 	make model <name>     - creates a new model in the data directory and a migration in the migrations directory
-
+	make mail <name>      - creates two starter mail templates in the mail directory
+	
 	`)
 }
