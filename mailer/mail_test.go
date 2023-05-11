@@ -137,6 +137,9 @@ func TestMail_sendUsingGmailApi(t *testing.T) {
 		Subject:     "test",
 		Template:    "test",
 		Attachments: []string{"./testdata/mail/test.html.tmpl"},
+		Data: map[string]interface{}{
+			"content": "<h1>Emir</>",
+		},
 	}
 
 	mailer.API = "gmail"

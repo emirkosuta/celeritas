@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"html"
 	"html/template"
 	"os"
 	"path/filepath"
@@ -290,7 +291,28 @@ func (m *Mail) buildPlainTextMessage(msg Message) (string, error) {
 
 	plainMessage := tpl.String()
 
+	plainMessage = html.UnescapeString(plainMessage) // Unescape HTML entities
+	plainMessage = stripHTMLTags(plainMessage)       // Strip HTML tags
+
 	return plainMessage, nil
+}
+
+// stripHTMLTags removes HTML tags from a given string
+func stripHTMLTags(s string) string {
+	stripped := ""
+	inTag := false
+
+	for _, char := range s {
+		if char == '<' {
+			inTag = true
+		} else if char == '>' {
+			inTag = false
+		} else if !inTag {
+			stripped += string(char)
+		}
+	}
+
+	return stripped
 }
 
 // inlineCSS takes html input as a string, and inlines css where possible
