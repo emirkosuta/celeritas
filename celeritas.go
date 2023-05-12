@@ -47,6 +47,7 @@ type Celeritas struct {
 	Cache         cache.Cache
 	Scheduler     *cron.Cron
 	Storage       storage.Storage
+	PublicStorage storage.Storage
 	Mail          mailer.Mail
 }
 
@@ -62,7 +63,7 @@ type config struct {
 func (c *Celeritas) New(rootPath string) error {
 	pathConfig := initPaths{
 		rootPath:    rootPath,
-		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware", "storage"},
+		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware", "storage", "storage/public"},
 	}
 
 	err := c.Init(pathConfig)
@@ -179,6 +180,7 @@ func (c *Celeritas) New(rootPath string) error {
 	c.createRenderer()
 
 	c.Storage = c.createStorage()
+	c.PublicStorage = c.createPublicStorage()
 	c.Mail = c.createMailer()
 	go c.Mail.ListenForMail()
 
@@ -199,10 +201,10 @@ func (c *Celeritas) Init(p initPaths) error {
 // start the webserver
 func (c *Celeritas) ListenAndServe() {
 	// Create a file server to serve static files
-	fs := http.FileServer(http.Dir(c.Storage.BaseDir))
+	fs := http.FileServer(http.Dir(c.Storage.BaseDir) + "/public")
 
 	// Use the FileServer middleware to serve files from the static directory
-	c.Routes.Handle("/storage/*", http.StripPrefix("/storage/", fs))
+	c.Routes.Handle("/public/*", http.StripPrefix("/public/", fs))
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%s", os.Getenv("PORT")),
@@ -284,6 +286,13 @@ func (c *Celeritas) createMailer() mailer.Mail {
 func (c *Celeritas) createStorage() storage.Storage {
 	storageClient := storage.Storage{
 		BaseDir: filepath.Join(c.RootPath, os.Getenv("STORAGE_PATH")),
+	}
+	return storageClient
+}
+
+func (c *Celeritas) createPublicStorage() storage.Storage {
+	storageClient := storage.Storage{
+		BaseDir: filepath.Join(c.RootPath, os.Getenv("STORAGE_PATH")+"/public"),
 	}
 	return storageClient
 }
