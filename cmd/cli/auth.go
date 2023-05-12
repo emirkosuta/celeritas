@@ -52,6 +52,36 @@ func doAuth() error {
 		exitGracefully(err)
 	}
 
+	err = copyFilefromTemplate("templates/handlers/auth-handlers.go.txt", cel.RootPath+"/handlers/auth-handlers.go")
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	err = copyFilefromTemplate("templates/mailer/password-reset.html.tmpl", cel.RootPath+"/mail/password-reset.html.tmpl")
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	err = copyFilefromTemplate("templates/mailer/password-reset.plain.tmpl", cel.RootPath+"/mail/password-reset.plain.tmpl")
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	err = copyFilefromTemplate("templates/views/login.jet", cel.RootPath+"/views/login.jet")
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	err = copyFilefromTemplate("templates/views/forgot.jet", cel.RootPath+"/views/forgot.jet")
+	if err != nil {
+		exitGracefully(err)
+	}
+
+	err = copyFilefromTemplate("templates/views/reset-password.jet", cel.RootPath+"/views/reset-password.jet")
+	if err != nil {
+		exitGracefully(err)
+	}
+
 	color.Yellow("  - users, tokens, and remember_tokens migrations created and executed")
 	color.Yellow("  - user and token models created")
 	color.Yellow("  - auth middleware created")
