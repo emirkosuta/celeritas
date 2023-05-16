@@ -14,11 +14,13 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/dgraph-io/badger/v3"
 	"github.com/emirkosuta/celeritas/cache"
+	"github.com/emirkosuta/celeritas/jwt"
 	"github.com/emirkosuta/celeritas/mailer"
 	"github.com/emirkosuta/celeritas/render"
 	"github.com/emirkosuta/celeritas/session"
 	"github.com/emirkosuta/celeritas/storage"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/gomodule/redigo/redis"
 	"github.com/joho/godotenv"
 	"github.com/robfig/cron/v3"
@@ -45,12 +47,14 @@ type Celeritas struct {
 	DB            Database
 	config        config
 	EncryptionKey string
+	JwtToken      jwt.JwtToken
 	Cache         cache.Cache
 	Scheduler     *cron.Cron
 	Storage       storage.Storage
 	PublicStorage storage.Storage
 	Mail          mailer.Mail
 	Server        Server
+	Frontend      Frontend
 }
 
 type Server struct {
@@ -58,6 +62,10 @@ type Server struct {
 	Port       string
 	Secure     bool
 	URL        string
+}
+
+type Frontend struct {
+	URL string
 }
 
 type config struct {
@@ -70,6 +78,8 @@ type config struct {
 }
 
 func (c *Celeritas) New(rootPath string) error {
+	validate = validator.New()
+
 	pathConfig := initPaths{
 		rootPath:    rootPath,
 		folderNames: []string{"handlers", "migrations", "views", "mail", "data", "public", "tmp", "logs", "middleware", "storage", "storage/public"},
@@ -122,6 +132,22 @@ func (c *Celeritas) New(rootPath string) error {
 		},
 	}
 
+	jwtTokenDuration, err := time.ParseDuration(os.Getenv("JWT_ACCESS_TOKEN_EXPIRY"))
+	if err != nil {
+		return err
+	}
+	jwtRefreshDuration, err := time.ParseDuration(os.Getenv("JWT_REFRESH_TOKEN_EXPIRY"))
+	if err != nil {
+		return err
+	}
+
+	c.JwtToken = jwt.JwtToken{
+		JwtTokenTimeExp:        jwtTokenDuration,
+		JwtRefreshTokenTimeExp: jwtRefreshDuration,
+		RSAPrivate:             os.Getenv("JWT_RSA_PRIVATE"),
+		RSAPublic:              os.Getenv("JWT_RSA_PUBLIC"),
+	}
+
 	secure := true
 	if strings.ToLower(os.Getenv("SECURE")) == "false" {
 		secure = false
@@ -132,6 +158,10 @@ func (c *Celeritas) New(rootPath string) error {
 		Port:       os.Getenv("PORT"),
 		Secure:     secure,
 		URL:        os.Getenv("APP_URL"),
+	}
+
+	c.Frontend = Frontend{
+		URL: os.Getenv("FRONTEND_URL"),
 	}
 
 	// connect to database

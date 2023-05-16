@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bwmarrin/go-alone"
+	goalone "github.com/bwmarrin/go-alone"
 )
 
 type Signer struct {

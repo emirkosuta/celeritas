@@ -28,6 +28,11 @@ func doMake(arg2, arg3 string) error {
 		if err != nil {
 			exitGracefully(err)
 		}
+	case "auth-api":
+		err := doAuthApi()
+		if err != nil {
+			exitGracefully(err)
+		}
 	case "handler":
 		if arg3 == "" {
 			exitGracefully(errors.New("you must give the handler a name"))

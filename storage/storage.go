@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -42,7 +41,6 @@ func (s Storage) DeleteFile(filename string) error {
 // CreateDir creates a new directory with the given dirname.
 func (s Storage) CreateDir(dirname string) error {
 	dirPath := filepath.Join(s.BaseDir, dirname)
-	fmt.Println(dirPath)
 	return os.MkdirAll(dirPath, 0755)
 }
 
