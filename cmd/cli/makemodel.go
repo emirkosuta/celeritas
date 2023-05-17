@@ -52,11 +52,35 @@ func doModel(arg3 string) error {
 	}
 
 	// register model
-	modelsdata, err := os.ReadFile(cel.RootPath + "/data/models.go")
+	err = registerModel(modelName)
 	if err != nil {
 		return err
 	}
 
+	return nil
+}
+
+func findClosingBraceIndex(content string, fromIndex int) (int, error) {
+	openBraces := 0
+	for i := fromIndex; i < len(content); i++ {
+		switch content[i] {
+		case '{':
+			openBraces++
+		case '}':
+			openBraces--
+			if openBraces == 0 {
+				return i, nil
+			}
+		}
+	}
+	return -1, errors.New("matching closing brace not found")
+}
+
+func registerModel(modelName string) error {
+	modelsdata, err := os.ReadFile(cel.RootPath + "/data/models.go")
+	if err != nil {
+		return err
+	}
 	modelsContent := string(modelsdata)
 
 	// Find the insertion point
@@ -95,20 +119,4 @@ func doModel(arg3 string) error {
 	}
 
 	return nil
-}
-
-func findClosingBraceIndex(content string, fromIndex int) (int, error) {
-	openBraces := 0
-	for i := fromIndex; i < len(content); i++ {
-		switch content[i] {
-		case '{':
-			openBraces++
-		case '}':
-			openBraces--
-			if openBraces == 0 {
-				return i, nil
-			}
-		}
-	}
-	return -1, errors.New("matching closing brace not found")
 }

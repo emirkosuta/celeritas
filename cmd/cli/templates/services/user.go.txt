@@ -1,0 +1,75 @@
+package services
+
+import (
+	"$MODULENAME$/dto"
+	"$MODULENAME$/errors"
+)
+
+func (h *Services) CreateUser(userInput dto.UserRegistrationDTO) (*dto.UserResponseDTO, error) {
+	_, err := h.Models.User.GetByEmail(userInput.Email)
+	if err == nil {
+		return nil, errors.ErrUserExists
+	}
+
+	u := userInput.ToUser()
+
+	id, err := h.Models.User.Insert(*u)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	u, err = u.Get(id)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	response := dto.ToUserResponseDTO(*u)
+
+	return &response, nil
+}
+
+func (h *Services) UpdateUser(userId int, userInput dto.UserUpdateDTO) (*dto.UserResponseDTO, error) {
+	u, _ := h.Models.User.Get(userId)
+	userInput.ToUser(u)
+
+	err := h.Models.User.Update(*u)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	response := dto.ToUserResponseDTO(*u)
+
+	return &response, nil
+}
+
+func (h *Services) DeleteUser(userId int) error {
+	err := h.Models.User.Delete(userId)
+	if err != nil {
+		h.App.ErrorLog.Println(err)
+		return errors.ErrInternalServer
+	}
+
+	return nil
+}
+
+func (h *Services) GetUser(userId int) (*dto.UserResponseDTO, error) {
+	u, err := h.Models.User.Get(userId)
+	if err != nil {
+		h.App.ErrorLog.Println(err)
+		return nil, errors.ErrNotFound
+	}
+	response := dto.ToUserResponseDTO(*u)
+
+	return &response, nil
+}
+
+func (h *Services) GetUserList() ([]dto.UserResponseDTO, error) {
+	u, err := h.Models.User.GetAll()
+	if err != nil {
+		h.App.ErrorLog.Println(err)
+		return nil, errors.ErrInternalServer
+	}
+	response := dto.ToUsersResponseDTO(u)
+
+	return response, nil
+}

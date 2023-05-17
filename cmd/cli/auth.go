@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fatih/color"
@@ -16,45 +17,100 @@ func doAuth() error {
 
 	err := copyFilefromTemplate("templates/migrations/auth_tables."+dbType+".sql", upFile)
 	if err != nil {
-		exitGracefully(err)
+		return err
 	}
 
-	err = copyDataToFile([]byte("drop table if exists users cascade; drop table if exists tokens cascade; drop table if exists remember_tokens;"), downFile)
+	err = copyDataToFile([]byte("drop table if exists users cascade;"), downFile)
 	if err != nil {
-		exitGracefully(err)
+		return err
 	}
 
-	// run migrations
-	err = doMigrate("up", "")
+	// copy over auth handler
+	userHandlerFile, err := templateFS.ReadFile("templates/handlers/user.go.txt")
 	if err != nil {
-		exitGracefully(err)
+		return err
+	}
+	userHandler := string(userHandlerFile)
+	userHandler = strings.ReplaceAll(userHandler, "$MODULENAME$", moduleName)
+	err = copyDataToFile([]byte(userHandler), cel.RootPath+"/handlers/user.go")
+	if err != nil {
+		return err
 	}
 
-	// copy files over
+	//copy over user service
+	userServiceFile, err := templateFS.ReadFile("templates/services/user.go.txt")
+	if err != nil {
+		return err
+	}
+	userService := string(userServiceFile)
+	userService = strings.ReplaceAll(userService, "$MODULENAME$", moduleName)
+	err = copyDataToFile([]byte(userService), cel.RootPath+"/services/user.go")
+	if err != nil {
+		return err
+	}
+
+	// copy over user model and register it in models
 	err = copyFilefromTemplate("templates/data/user.go.txt", cel.RootPath+"/data/user.go")
 	if err != nil {
-		exitGracefully(err)
+		return err
+	}
+	err = registerModel("User")
+	if err != nil {
+		return err
 	}
 
-	err = copyFilefromTemplate("templates/data/token.go.txt", cel.RootPath+"/data/token.go")
+	//copy user dto
+	userDtoFile, err := templateFS.ReadFile("templates/dto/user.go.txt")
 	if err != nil {
-		exitGracefully(err)
+		return err
+	}
+	userDto := string(userDtoFile)
+	userDto = strings.ReplaceAll(userDto, "$MODULENAME$", moduleName)
+	err = copyDataToFile([]byte(userDto), cel.RootPath+"/dto/user.go")
+	if err != nil {
+		return err
 	}
 
-	// copy over middleware
-	err = copyFilefromTemplate("templates/middleware/auth.go.txt", cel.RootPath+"/middleware/auth.go")
+	// copy over auth middleware
+	authMiddlewareFile, err := templateFS.ReadFile("templates/middleware/auth.go.txt")
 	if err != nil {
-		exitGracefully(err)
+		return err
+	}
+	authMiddleware := string(authMiddlewareFile)
+	authMiddleware = strings.ReplaceAll(authMiddleware, "$MODULENAME$", moduleName)
+	err = copyDataToFile([]byte(authMiddleware), cel.RootPath+"/middleware/auth.go")
+	if err != nil {
+		return err
 	}
 
-	err = copyFilefromTemplate("templates/middleware/auth-token.go.txt", cel.RootPath+"/middleware/auth-token.go")
+	// copy over auth handler
+	authHandlerFile, err := templateFS.ReadFile("templates/handlers/auth-handlers.go.txt")
 	if err != nil {
-		exitGracefully(err)
+		return err
+	}
+	authHandler := string(authHandlerFile)
+	authHandler = strings.ReplaceAll(authHandler, "$MODULENAME$", moduleName)
+	err = copyDataToFile([]byte(authHandler), cel.RootPath+"/handlers/auth-handlers.go")
+	if err != nil {
+		return err
 	}
 
-	err = copyFilefromTemplate("templates/handlers/auth-handlers.go.txt", cel.RootPath+"/handlers/auth-handlers.go")
+	//copy over auth dto
+	err = copyFilefromTemplate("templates/dto/auth.go.txt", cel.RootPath+"/dto/auth.go")
 	if err != nil {
-		exitGracefully(err)
+		return err
+	}
+
+	//copy over auth service
+	authServiceFile, err := templateFS.ReadFile("templates/services/auth.go.txt")
+	if err != nil {
+		return err
+	}
+	authService := string(authServiceFile)
+	authService = strings.ReplaceAll(authService, "$MODULENAME$", moduleName)
+	err = copyDataToFile([]byte(authService), cel.RootPath+"/services/auth.go")
+	if err != nil {
+		return err
 	}
 
 	err = copyFilefromTemplate("templates/mailer/password-reset.html.tmpl", cel.RootPath+"/mail/password-reset.html.tmpl")
@@ -67,110 +123,11 @@ func doAuth() error {
 		exitGracefully(err)
 	}
 
-	err = copyFilefromTemplate("templates/views/login.jet", cel.RootPath+"/views/login.jet")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/views/forgot.jet", cel.RootPath+"/views/forgot.jet")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/views/reset-password.jet", cel.RootPath+"/views/reset-password.jet")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	color.Yellow("  - users, tokens, and remember_tokens migrations created and executed")
-	color.Yellow("  - user and token models created")
+	color.Yellow("  - users migration created. Don't forget to execute the migration.")
+	color.Yellow("  - user model, dto, service and handler created")
+	color.Yellow("  - password reset mail created")
 	color.Yellow("  - auth middleware created")
-	color.Yellow("")
-	color.Yellow("Don't forget to add user and token models in data/models.go, and to add appropriate middleware to your routes!")
-
-	return nil
-}
-
-func doAuthApi() error {
-	// migrations
-	dbType := cel.DB.DatabaseType
-	fileName := fmt.Sprintf("%d_create_auth_tables", time.Now().UnixMicro())
-	upFile := cel.RootPath + "/migrations/" + fileName + ".up.sql"
-	downFile := cel.RootPath + "/migrations/" + fileName + ".down.sql"
-
-	err := copyFilefromTemplate("templates/migrations/auth_tables."+dbType+".sql", upFile)
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyDataToFile([]byte("drop table if exists users cascade; drop table if exists tokens cascade; drop table if exists remember_tokens;"), downFile)
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	// run migrations
-	err = doMigrate("up", "")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	// copy files over
-	err = copyFilefromTemplate("templates/data/user.go.txt", cel.RootPath+"/data/user.go")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/data/token.go.txt", cel.RootPath+"/data/token.go")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	// copy over middleware
-	err = copyFilefromTemplate("templates/middleware/auth-api.go.txt", cel.RootPath+"/middleware/auth-api.go")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/middleware/auth-token.go.txt", cel.RootPath+"/middleware/auth-token.go")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/handlers/auth-handlers.go.txt", cel.RootPath+"/handlers/auth-handlers.go")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/mailer/password-reset.html.tmpl", cel.RootPath+"/mail/password-reset.html.tmpl")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/mailer/password-reset.plain.tmpl", cel.RootPath+"/mail/password-reset.plain.tmpl")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/views/login.jet", cel.RootPath+"/views/login.jet")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/views/forgot.jet", cel.RootPath+"/views/forgot.jet")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	err = copyFilefromTemplate("templates/views/reset-password.jet", cel.RootPath+"/views/reset-password.jet")
-	if err != nil {
-		exitGracefully(err)
-	}
-
-	color.Yellow("  - users, tokens, and remember_tokens migrations created and executed")
-	color.Yellow("  - user and token models created")
-	color.Yellow("  - auth middleware created")
-	color.Yellow("")
-	color.Yellow("Don't forget to add user and token models in data/models.go, and to add appropriate middleware to your routes!")
+	color.Yellow("  - auth handler, service and dto created")
 
 	return nil
 }

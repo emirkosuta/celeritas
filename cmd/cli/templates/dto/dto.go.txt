@@ -17,6 +17,8 @@ type Update$SERVICENAME$DTO struct {
 
 type $SERVICENAME$ResponseDTO struct {
 	Title string `json:"title"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }
 
 func (dto Create$SERVICENAME$DTO) To$SERVICENAME$() *data.$MODELNAME$ {
@@ -34,6 +36,8 @@ func (dto Update$SERVICENAME$DTO) To$SERVICENAME$(data *data.$MODELNAME$) {
 func To$SERVICENAME$ResponseDTO(data data.$MODELNAME$) $SERVICENAME$ResponseDTO {
 	return $SERVICENAME$ResponseDTO{
 		Title: data.Title,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
 	}
 }
 

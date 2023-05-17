@@ -23,11 +23,6 @@ func doMake(arg2, arg3 string) error {
 		if err != nil {
 			exitGracefully(err)
 		}
-	case "auth-api":
-		err := doAuthApi()
-		if err != nil {
-			exitGracefully(err)
-		}
 	case "handler":
 		err := makeHandler(arg3)
 		if err != nil {

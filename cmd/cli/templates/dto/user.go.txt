@@ -1,0 +1,71 @@
+package dto
+
+import (
+	"time"
+
+	"$MODULENAME$/data"
+)
+
+type UserRegistrationDTO struct {
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required,min=8"`
+}
+
+func (dto *UserRegistrationDTO) ToUser() *data.User {
+	return &data.User{
+		FirstName: dto.FirstName,
+		LastName:  dto.LastName,
+		Email:     dto.Email,
+		Password:  dto.Password,
+		Active:    1,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+}
+
+type UserUpdateDTO struct {
+	FirstName string `json:"first_name" validate:"omitempty,min=2"`
+	LastName  string `json:"last_name" validate:"omitempty,min=2"`
+}
+
+func (dto *UserUpdateDTO) ToUser(u *data.User) {
+	if dto.FirstName != "" {
+		u.FirstName = dto.FirstName
+	}
+	if dto.LastName != "" {
+		u.LastName = dto.LastName
+	}
+	u.UpdatedAt = time.Now()
+}
+
+type UserResponseDTO struct {
+	ID        int       `json:"id"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Email     string    `json:"email"`
+	Active    bool      `json:"active"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
+}
+
+func ToUserResponseDTO(user data.User) UserResponseDTO {
+	return UserResponseDTO{
+		ID:        user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Active:    user.Active == 1,
+		CreatedAt: user.CreatedAt,
+		UpdatedAt: user.UpdatedAt,
+	}
+}
+
+func ToUsersResponseDTO(users []*data.User) []UserResponseDTO {
+	dtoUsers := make([]UserResponseDTO, len(users))
+	for i, user := range users {
+		dtoUsers[i] = ToUserResponseDTO(*user)
+	}
+	return dtoUsers
+}
