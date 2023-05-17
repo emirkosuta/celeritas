@@ -1,0 +1,47 @@
+package dto
+
+import (
+	"time"
+
+	"$MODULENAME$/data"
+)
+
+type Create$SERVICENAME$DTO struct {
+	Title string `json:"title" validate:"required,min=2"`
+}
+
+type Update$SERVICENAME$DTO struct {
+	Title string `json:"title" validate:"omitempty,min=2"`
+}
+
+
+type $SERVICENAME$ResponseDTO struct {
+	Title string `json:"title"`
+}
+
+func (dto Create$SERVICENAME$DTO) To$SERVICENAME$() *data.$MODELNAME$ {
+	return &data.$MODELNAME${
+		Title:     dto.Title,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+}
+
+func (dto Update$SERVICENAME$DTO) To$SERVICENAME$(data *data.$MODELNAME$) {
+		data.UpdatedAt = time.Now()
+}
+
+func To$SERVICENAME$ResponseDTO(data data.$MODELNAME$) $SERVICENAME$ResponseDTO {
+	return $SERVICENAME$ResponseDTO{
+		Title: data.Title,
+	}
+}
+
+func To$SERVICENAME$ListResponseDTO($TABLENAME$ []*data.$MODELNAME$) []$SERVICENAME$ResponseDTO {
+	dtoList := make([]$SERVICENAME$ResponseDTO, len($TABLENAME$))
+	for i, x := range $TABLENAME$ {
+		dtoList[i] = To$SERVICENAME$ResponseDTO(*x)
+	}
+	return dtoList
+}
+

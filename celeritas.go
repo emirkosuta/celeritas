@@ -55,6 +55,7 @@ type Celeritas struct {
 	Mail          mailer.Mail
 	Server        Server
 	Frontend      Frontend
+	moduleName    string
 }
 
 type Server struct {

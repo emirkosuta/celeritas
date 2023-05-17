@@ -1,6 +1,6 @@
 CREATE TABLE $MIGRATIONNAME$ (
   id int(11) NOT NULL AUTO_INCREMENT,
-  some_field varchar(255) NOT NULL,
+  title varchar(255) NOT NULL,
   created_at TIMESTAMP,
   updated_at TIMESTAMP,
   PRIMARY KEY (id)

@@ -1,0 +1,70 @@
+package services
+
+import (
+	"$MODULENAME$/dto"
+	"$MODULENAME$/errors"
+)
+
+func (h *Services) Create$SERVICENAME$(input dto.Create$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
+	data := input.To$SERVICENAME$()
+
+	id, err := h.Models.$MODELNAME$.Insert(*data)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	data, err = data.Get(id)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	res := dto.To$SERVICENAME$ResponseDTO(*data)
+
+	return &res, nil
+}
+
+func (h *Services) Update$SERVICENAME$(id int, input dto.Update$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
+	data, _ := h.Models.$MODELNAME$.Get(id)
+	input.To$SERVICENAME$(data)
+
+	err := h.Models.$MODELNAME$.Update(*data)
+	if err != nil {
+		return nil, errors.ErrInternalServer
+	}
+
+	response := dto.To$SERVICENAME$ResponseDTO(*data)
+
+	return &response, nil
+}
+
+func (h *Services) Delete$SERVICENAME$(id int) error {
+	err := h.Models.$MODELNAME$.Delete(id)
+	if err != nil {
+		h.App.ErrorLog.Println(err)
+		return errors.ErrInternalServer
+	}
+
+	return nil
+}
+
+func (h *Services) Get$SERVICENAME$(id int) (*dto.$SERVICENAME$ResponseDTO, error) {
+	data, err := h.Models.$MODELNAME$.Get(id)
+	if err != nil {
+		h.App.ErrorLog.Println(err)
+		return nil, errors.ErrNotFound
+	}
+	response := dto.To$SERVICENAME$ResponseDTO(*data)
+
+	return &response, nil
+}
+
+func (h *Services) Get$SERVICENAME$List() ([]dto.$SERVICENAME$ResponseDTO, error) {
+	data, err := h.Models.$MODELNAME$.GetAll(nil)
+	if err != nil {
+		h.App.ErrorLog.Println(err)
+		return nil, errors.ErrInternalServer
+	}
+	response := dto.To$SERVICENAME$ListResponseDTO(data)
+
+	return response, nil
+}

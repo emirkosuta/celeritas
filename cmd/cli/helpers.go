@@ -19,6 +19,7 @@ func setup() {
 		exitGracefully(err)
 	}
 
+	moduleName = os.Getenv("MODULE_NAME")
 	cel.RootPath = path
 	cel.DB.DatabaseType = os.Getenv("DATABASE_TYPE")
 }

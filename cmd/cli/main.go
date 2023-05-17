@@ -10,6 +10,7 @@ import (
 
 const version = "1.0.0"
 
+var moduleName string
 var cel celeritas.Celeritas
 
 func main() {

@@ -7,6 +7,7 @@ import (
 // $MODELNAME$ struct
 type $MODELNAME$ struct {
     ID        int       `db:"id,omitempty"`
+    Title     string    `db:"title"`
     CreatedAt time.Time `db:"created_at"`
     UpdatedAt time.Time `db:"updated_at"`
 }
@@ -17,11 +18,17 @@ func (t *$MODELNAME$) Table() string {
 }
 
 // GetAll gets all records from the database, using upper
-func (t *$MODELNAME$) GetAll(condition up.Cond) ([]*$MODELNAME$, error) {
+func (t *$MODELNAME$) GetAll(condition *up.Cond) ([]*$MODELNAME$, error) {
     collection := upper.Collection(t.Table())
     var all []*$MODELNAME$
+    var res up.Result
 
-    res := collection.Find(condition)
+	if condition != nil {
+		res = collection.Find(*condition)
+	} else {
+		res = collection.Find()
+	}
+
     err := res.All(&all)
     if err != nil {
         return nil, err
