@@ -3,7 +3,9 @@ package main
 import (
 	"embed"
 	"errors"
+	"log"
 	"os"
+	"path/filepath"
 )
 
 //go:embed templates
@@ -28,6 +30,11 @@ func copyFilefromTemplate(templatePath, targetFile string) error {
 }
 
 func copyDataToFile(data []byte, to string) error {
+	dir, _ := filepath.Split(to)                   // get the directory of the target file
+	if err := os.MkdirAll(dir, 0755); err != nil { // create the directory if it doesn't exist
+		log.Fatalf("failed to create directory: %v", err)
+	}
+
 	err := os.WriteFile(to, data, 0644)
 	if err != nil {
 		return err
