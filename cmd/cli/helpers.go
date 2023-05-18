@@ -1,27 +1,36 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/fatih/color"
 	"github.com/joho/godotenv"
 )
 
-func setup() {
-	err := godotenv.Load()
-	if err != nil {
-		exitGracefully(err)
-	}
+func setup(arg1 string) {
+	if arg1 != "new" && arg1 != "version" && arg1 != "help" {
+		err := godotenv.Load()
+		if err != nil {
+			exitGracefully(err)
+		}
 
-	path, err := os.Getwd()
-	if err != nil {
-		exitGracefully(err)
-	}
+		path, err := os.Getwd()
+		if err != nil {
+			exitGracefully(err)
+		}
 
-	moduleName = os.Getenv("MODULE_NAME")
-	cel.RootPath = path
-	cel.DB.DatabaseType = os.Getenv("DATABASE_TYPE")
+		moduleName = os.Getenv("MODULE_NAME")
+		if moduleName == "" {
+			exitGracefully(errors.New("you must define your MODULE_NAME in .env file"))
+		}
+
+		cel.RootPath = path
+		cel.DB.DatabaseType = os.Getenv("DATABASE_TYPE")
+	}
 }
 
 func getDSN() string {
@@ -69,4 +78,49 @@ func showHelp() {
 	make mail <name>      - creates two starter mail templates in the mail directory
 	
 	`)
+}
+
+func updateSourceFiles(path string, fi os.FileInfo, err error) error {
+	// check for an error before doing anything else
+	if err != nil {
+		return err
+	}
+
+	// check if current file is directory
+	if fi.IsDir() {
+		return nil
+	}
+
+	// only check go files
+	matched, err := filepath.Match("*.go", fi.Name())
+	if err != nil {
+		return err
+	}
+
+	// we have a matching file
+	if matched {
+		// read file contents
+		read, err := os.ReadFile(path)
+		if err != nil {
+			exitGracefully(err)
+		}
+
+		newContents := strings.Replace(string(read), "myapp", appUrl, -1)
+
+		// write the changed file
+		err = os.WriteFile(path, []byte(newContents), 0)
+		if err != nil {
+			exitGracefully(err)
+		}
+	}
+
+	return nil
+}
+
+func updateSource() {
+	// walk entire project folder, including subfolders
+	err := filepath.Walk(".", updateSourceFiles)
+	if err != nil {
+		exitGracefully(err)
+	}
 }
