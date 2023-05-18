@@ -95,6 +95,16 @@ func doAuth() error {
 		return err
 	}
 
+	// copy over auth handler
+	authRoutes, err := templateFS.ReadFile("templates/routes/auth.go.txt")
+	if err != nil {
+		return err
+	}
+	err = addApiRoute(string(authRoutes))
+	if err != nil {
+		return err
+	}
+
 	//copy over auth dto
 	err = copyFilefromTemplate("templates/dto/auth.go.txt", cel.RootPath+"/dto/auth.go")
 	if err != nil {

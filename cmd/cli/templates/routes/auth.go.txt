@@ -1,0 +1,15 @@
+rt.With(a.Middleware.JwtVerifyRefreshToken).Get("/refresh", a.Handlers.RefreshToken)
+rt.Post("/users/login", a.Handlers.Login)
+rt.Post("/users/forgot-password", a.Handlers.ForgotPassword)
+rt.Get("/users/reset-password", a.Handlers.ResetPasswordVerify)
+rt.Post("/users/reset-password", a.Handlers.ResetPassword)
+rt.Post("/users", a.Handlers.CreateUser)
+
+rt.Group(func(rt chi.Router) {
+			rt.Use(a.Middleware.JwtVerifyToken)
+			rt.Post("/logout", a.Handlers.Logout)
+			rt.Get("/users/{id}", a.Handlers.GetUserById)
+			rt.Get("/users", a.Handlers.GetAllUsers)
+			rt.Put("/users/{id}", a.Handlers.UpdateUser)
+			rt.Delete("/users/{id}", a.Handlers.DeleteUser)
+		})

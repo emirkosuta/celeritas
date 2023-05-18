@@ -1,0 +1,5 @@
+rt.Post("/$ROUTEBASENAME$", a.Handlers.Create$MODELNAME$)
+rt.Get("/$ROUTEBASENAME$/{id}", a.Handlers.Get$MODELNAME$ById)
+rt.Get("/$ROUTEBASENAME$", a.Handlers.Get$MODELNAME$List)
+rt.Put("/$ROUTEBASENAME$/{id}", a.Handlers.Update$MODELNAME$)
+rt.Delete("/$ROUTEBASENAME$/{id}", a.Handlers.Delete$MODELNAME$)
