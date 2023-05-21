@@ -1,0 +1,16 @@
+type UserService interface {
+	CreateUser(input dto.UserRegistrationDTO) (*dto.UserResponseDTO, error)
+	UpdateUser(id int, input dto.UserUpdateDTO) (*dto.UserResponseDTO, error)
+	DeleteUser(id int) error
+	GetUser(id int) (*dto.UserResponseDTO, error)
+	GetUserList() ([]dto.UserResponseDTO, error)
+}
+
+type AuthService interface {
+	Login(loginInput dto.LoginInput) (*jwtdto.Token, error)
+	RefreshToken(userId int, refreshToken string, iat string) (*jwtdto.Token, error)
+	Logout(userId int) error
+	ForgotPassword(input dto.ForgotPassword) error
+	ResetPasswordVerify(email, token string) (*dto.ResetPasswordVerifyResponse, error)
+	ResetPassword(input dto.ResetPassword) error
+}

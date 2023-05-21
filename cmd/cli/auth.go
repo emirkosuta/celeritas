@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -49,11 +50,6 @@ func doAuth() error {
 		return err
 	}
 
-	err = insertServiceInterface("User")
-	if err != nil {
-		return err
-	}
-
 	userHandlerInterfaceData, err := buildHandlerInterfaceData("User")
 	if err != nil {
 		return err
@@ -64,7 +60,7 @@ func doAuth() error {
 		return err
 	}
 
-	err = wireServiceAndHandler("User")
+	err = wireServiceAndHandler("User", "User")
 	if err != nil {
 		return err
 	}
@@ -125,7 +121,7 @@ func doAuth() error {
 		return err
 	}
 
-	err = wireServiceAndHandler("Auth")
+	err = wireServiceAndHandler("Auth", "User")
 	if err != nil {
 		return err
 	}
@@ -158,7 +154,7 @@ func doAuth() error {
 		return err
 	}
 
-	err = insertServiceInterface("Auth")
+	err = insertAuthInterfaces()
 	if err != nil {
 		return err
 	}
@@ -178,6 +174,28 @@ func doAuth() error {
 	color.Yellow("  - password reset mail created")
 	color.Yellow("  - auth middleware created")
 	color.Yellow("  - auth handler, service and dto created")
+
+	return nil
+}
+
+func insertAuthInterfaces() error {
+	servicedata, err := os.ReadFile(cel.RootPath + "/services/service.go")
+	if err != nil {
+		return err
+	}
+	serviceContent := string(servicedata)
+
+	serviceInterface, err := templateFS.ReadFile("templates/services/auth-interface.go.txt")
+	if err != nil {
+		return err
+	}
+
+	serviceContent += "\n" + string(serviceInterface) + "\n"
+
+	err = copyDataToFile([]byte(serviceContent), cel.RootPath+"/services/service.go")
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

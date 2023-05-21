@@ -58,7 +58,7 @@ func makeHandler(arg3 string) error {
 		return err
 	}
 
-	err = wireServiceAndHandler(handlerName)
+	err = wireServiceAndHandler(handlerName, handlerName)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func insertHandlerInterface(handlerName, handlerInterfaceData string) error {
 	return nil
 }
 
-func wireServiceAndHandler(handlerName string) error {
+func wireServiceAndHandler(handlerName string, modelName string) error {
 	initAppData, err := os.ReadFile(cel.RootPath + "/init-app.go")
 	if err != nil {
 		return err
@@ -134,7 +134,7 @@ func wireServiceAndHandler(handlerName string) error {
 	%sHandler := handlers.New%sHandler(cel, %sService)`,
 		strings.ToLower(handlerName),
 		handlerName,
-		handlerName,
+		modelName,
 		strings.ToLower(handlerName),
 		handlerName,
 		strings.ToLower(handlerName),

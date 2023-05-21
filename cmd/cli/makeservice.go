@@ -92,7 +92,7 @@ func insertServiceInterface(serviceName string) error {
 	}
 	serviceInterfaceData := strings.ReplaceAll(string(serviceInterface), "$SERVICENAME$", strcase.ToCamel(serviceName))
 
-	serviceContent += serviceInterfaceData
+	serviceContent += "\n" + serviceInterfaceData + "\n"
 
 	err = copyDataToFile([]byte(serviceContent), cel.RootPath+"/services/service.go")
 	if err != nil {
