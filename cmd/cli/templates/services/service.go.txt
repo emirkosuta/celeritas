@@ -3,12 +3,26 @@ package services
 import (
 	"$MODULENAME$/dto"
 	"$MODULENAME$/errors"
+
+	"github.com/emirkosuta/celeritas"
 )
 
-func (h *Services) Create$SERVICENAME$(input dto.Create$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
+type $SERVICENAME$ServiceImpl struct {
+	App  *celeritas.Celeritas
+	repo data.$SERVICENAME$
+}
+
+func New$SERVICENAME$ServiceImpl(app *celeritas.Celeritas, repo data.$SERVICENAME$) $SERVICENAME$Service {
+	return &$SERVICENAME$ServiceImpl{
+		App:  app,
+		repo: repo,
+	}
+}
+
+func (h *$SERVICENAME$ServiceImpl) Create$SERVICENAME$(input dto.Create$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
 	data := input.To$SERVICENAME$()
 
-	id, err := h.Models.$MODELNAME$.Insert(*data)
+	id, err := h.repo.Insert(*data)
 	if err != nil {
 		return nil, errors.ErrInternalServer
 	}
@@ -23,11 +37,11 @@ func (h *Services) Create$SERVICENAME$(input dto.Create$SERVICENAME$DTO) (*dto.$
 	return &res, nil
 }
 
-func (h *Services) Update$SERVICENAME$(id int, input dto.Update$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
-	data, _ := h.Models.$MODELNAME$.Get(id)
+func (h *$SERVICENAME$ServiceImpl) Update$SERVICENAME$(id int, input dto.Update$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error) {
+	data, _ := h.repo.Get(id)
 	input.To$SERVICENAME$(data)
 
-	err := h.Models.$MODELNAME$.Update(*data)
+	err := h.repo.Update(*data)
 	if err != nil {
 		return nil, errors.ErrInternalServer
 	}
@@ -37,8 +51,8 @@ func (h *Services) Update$SERVICENAME$(id int, input dto.Update$SERVICENAME$DTO)
 	return &response, nil
 }
 
-func (h *Services) Delete$SERVICENAME$(id int) error {
-	err := h.Models.$MODELNAME$.Delete(id)
+func (h *$SERVICENAME$ServiceImpl) Delete$SERVICENAME$(id int) error {
+	err := h.repo.Delete(id)
 	if err != nil {
 		h.App.ErrorLog.Println(err)
 		return errors.ErrInternalServer
@@ -47,8 +61,8 @@ func (h *Services) Delete$SERVICENAME$(id int) error {
 	return nil
 }
 
-func (h *Services) Get$SERVICENAME$(id int) (*dto.$SERVICENAME$ResponseDTO, error) {
-	data, err := h.Models.$MODELNAME$.Get(id)
+func (h *$SERVICENAME$ServiceImpl) Get$SERVICENAME$(id int) (*dto.$SERVICENAME$ResponseDTO, error) {
+	data, err := h.repo.Get(id)
 	if err != nil {
 		h.App.ErrorLog.Println(err)
 		return nil, errors.ErrNotFound
@@ -58,8 +72,8 @@ func (h *Services) Get$SERVICENAME$(id int) (*dto.$SERVICENAME$ResponseDTO, erro
 	return &response, nil
 }
 
-func (h *Services) Get$SERVICENAME$List() ([]dto.$SERVICENAME$ResponseDTO, error) {
-	data, err := h.Models.$MODELNAME$.GetAll(nil)
+func (h *$SERVICENAME$ServiceImpl) Get$SERVICENAME$List() ([]dto.$SERVICENAME$ResponseDTO, error) {
+	data, err := h.repo.GetAll(nil)
 	if err != nil {
 		h.App.ErrorLog.Println(err)
 		return nil, errors.ErrInternalServer

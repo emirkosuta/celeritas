@@ -84,9 +84,9 @@ func registerModel(modelName string) error {
 	modelsContent := string(modelsdata)
 
 	// Find the insertion point
-	insertIndex, err := findSubstringIndex(modelsContent, "type Models struct {", 0)
+	insertIndex, err := findSubstringIndex(modelsContent, "type Models struct", 0)
 	if err != nil {
-		return errors.New("'type Models struct {' not found")
+		return errors.New("'type Models struct' not found")
 	}
 
 	// Find the next closing curly brace after the insertion point
@@ -99,9 +99,9 @@ func registerModel(modelName string) error {
 	modelsContent = modelsContent[:registerModelPoint1] + "\t" + modelName + " " + modelName + "\n\t" + modelsContent[registerModelPoint1:]
 
 	// Find the insertion point
-	insertIndex2, err := findSubstringIndex(modelsContent, "return Models{", 0)
+	insertIndex2, err := findSubstringIndex(modelsContent, "return Models", 0)
 	if err != nil {
-		return errors.New("'return Models{' not found")
+		return errors.New("'return Models' not found")
 	}
 
 	// Find the next closing curly brace after the insertion point

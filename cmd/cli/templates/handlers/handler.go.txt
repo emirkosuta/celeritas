@@ -19,7 +19,7 @@ func (h *Handlers) Create$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.Services.Create$HANDLERNAME$(input)
+	res, err := h.Services.$HANDLERNAME$.Create$HANDLERNAME$(input)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -40,7 +40,7 @@ func (h *Handlers) Update$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.Services.Update$HANDLERNAME$(id, input)
+	res, err := h.Services.$HANDLERNAME$.Update$HANDLERNAME$(id, input)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -52,7 +52,7 @@ func (h *Handlers) Update$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) Delete$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
-	err := h.Services.Delete$HANDLERNAME$(id)
+	err := h.Services.$HANDLERNAME$.Delete$HANDLERNAME$(id)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -64,7 +64,7 @@ func (h *Handlers) Delete$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) Get$HANDLERNAME$ById(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
-	res, err := h.Services.Get$HANDLERNAME$(id)
+	res, err := h.Services.$HANDLERNAME$.Get$HANDLERNAME$(id)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -74,7 +74,7 @@ func (h *Handlers) Get$HANDLERNAME$ById(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handlers) Get$HANDLERNAME$List(w http.ResponseWriter, r *http.Request) {
-	res, err := h.Services.Get$HANDLERNAME$List()
+	res, err := h.Services.$HANDLERNAME$.Get$HANDLERNAME$List()
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return

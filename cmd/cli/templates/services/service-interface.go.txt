@@ -1,0 +1,7 @@
+type $SERVICENAME$Service interface {
+	Create$SERVICENAME$(input dto.Create$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error)
+	Update$SERVICENAME$(id int, input dto.Update$SERVICENAME$DTO) (*dto.$SERVICENAME$ResponseDTO, error)
+	Delete$SERVICENAME$(id int) error
+	Get$SERVICENAME$(id int) (*dto.$SERVICENAME$ResponseDTO, error)
+	Get$SERVICENAME$List() ([]dto.$SERVICENAME$ResponseDTO, error)
+}
