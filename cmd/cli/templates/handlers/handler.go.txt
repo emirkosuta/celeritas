@@ -6,10 +6,27 @@ import (
 
 	"$MODULENAME$/dto"
 	"$MODULENAME$/errors"
+	"$MODULENAME$/services"
+
+	"github.com/emirkosuta/celeritas"
 	"github.com/go-chi/chi/v5"
 )
 
-func (h *Handlers) Create$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
+// $HANDLERNAME$Handler is a concrete type that implements $HANDLERNAME$Handler
+type $LOWERCASEHANDLER$HandlerImpl struct {
+	App     *celeritas.Celeritas
+	service services.CarService
+}
+
+// New$HANDLERNAME$Handler initializes a new $HANDLERNAME$Handler with its dependencies
+func New$HANDLERNAME$Handler(app *celeritas.Celeritas, $LOWERCASEHANDLER$Service services.$HANDLERNAME$Service) $HANDLERNAME$Handler {
+	return &$LOWERCASEHANDLER$HandlerImpl{
+		App:     app,
+		service: $LOWERCASEHANDLER$Service,
+	}
+}
+
+func (h *$LOWERCASEHANDLER$HandlerImpl) Create$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 	var input dto.Create$HANDLERNAME$DTO
 	h.App.ReadJSON(w, r, &input)
 
@@ -19,7 +36,7 @@ func (h *Handlers) Create$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.Services.$HANDLERNAME$.Create$HANDLERNAME$(input)
+	res, err := h.service.Create$HANDLERNAME$(input)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -28,7 +45,7 @@ func (h *Handlers) Create$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 	h.App.WriteDataResponse(w, http.StatusOK, "$HANDLERNAME$ created successfuly", res)
 }
 
-func (h *Handlers) Update$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
+func (h *$LOWERCASEHANDLER$HandlerImpl) Update$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
 	var input dto.Update$HANDLERNAME$DTO
@@ -40,7 +57,7 @@ func (h *Handlers) Update$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.Services.$HANDLERNAME$.Update$HANDLERNAME$(id, input)
+	res, err := h.service.Update$HANDLERNAME$(id, input)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -49,10 +66,10 @@ func (h *Handlers) Update$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 	h.App.WriteDataResponse(w, http.StatusOK, "$HANDLERNAME$ updated successfuly", res)
 }
 
-func (h *Handlers) Delete$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
+func (h *$LOWERCASEHANDLER$HandlerImpl) Delete$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
-	err := h.Services.$HANDLERNAME$.Delete$HANDLERNAME$(id)
+	err := h.service.Delete$HANDLERNAME$(id)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -61,10 +78,10 @@ func (h *Handlers) Delete$HANDLERNAME$(w http.ResponseWriter, r *http.Request) {
 	h.App.WriteSuccessResponse(w, http.StatusOK, "$HANDLERNAME$ deleted successfuly")
 }
 
-func (h *Handlers) Get$HANDLERNAME$ById(w http.ResponseWriter, r *http.Request) {
+func (h *$LOWERCASEHANDLER$HandlerImpl) Get$HANDLERNAME$ById(w http.ResponseWriter, r *http.Request) {
 	id, _ := strconv.Atoi(chi.URLParam(r, "id"))
 
-	res, err := h.Services.$HANDLERNAME$.Get$HANDLERNAME$(id)
+	res, err := h.service.Get$HANDLERNAME$(id)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -73,8 +90,8 @@ func (h *Handlers) Get$HANDLERNAME$ById(w http.ResponseWriter, r *http.Request) 
 	h.App.WriteDataResponse(w, http.StatusOK, "", res)
 }
 
-func (h *Handlers) Get$HANDLERNAME$List(w http.ResponseWriter, r *http.Request) {
-	res, err := h.Services.$HANDLERNAME$.Get$HANDLERNAME$List()
+func (h *$LOWERCASEHANDLER$HandlerImpl) Get$HANDLERNAME$List(w http.ResponseWriter, r *http.Request) {
+	res, err := h.service.Get$HANDLERNAME$List()
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return

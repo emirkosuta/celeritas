@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 
@@ -39,9 +40,20 @@ func makeHandler(arg3 string) error {
 
 	handler := string(data)
 	handler = strings.ReplaceAll(handler, "$HANDLERNAME$", handlerName)
+	handler = strings.ReplaceAll(handler, "$LOWERCASEHANDLER$", strings.ToLower(handlerName))
 	handler = strings.ReplaceAll(handler, "$MODULENAME$", moduleName)
 
 	err = os.WriteFile(fileName, []byte(handler), 0644)
+	if err != nil {
+		return err
+	}
+
+	err = insertHandlerInterface(handlerName)
+	if err != nil {
+		return err
+	}
+
+	err = wireServiceAndHandler(handlerName)
 	if err != nil {
 		return err
 	}
@@ -51,6 +63,85 @@ func makeHandler(arg3 string) error {
 		return err
 	}
 	err = addApiRoute(routes)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func insertHandlerInterface(handlerName string) error {
+	handlerdata, err := os.ReadFile(cel.RootPath + "/handlers/handlers.go")
+	if err != nil {
+		return err
+	}
+	handlerContent := string(handlerdata)
+
+	handlerInterface, err := templateFS.ReadFile("templates/handlers/handler-interface.go.txt")
+	if err != nil {
+		return err
+	}
+	handlerInterfaceData := strings.ReplaceAll(string(handlerInterface), "$HANDLERNAME$", handlerName)
+
+	handlerContent += handlerInterfaceData
+
+	// Find the insertion point
+	insertIndex, err := findSubstringIndex(handlerContent, "type Handlers struct", 0)
+	if err != nil {
+		return errors.New("'type Handlers struct' not found")
+	}
+
+	// Find the next closing curly brace after the insertion point
+	registerHandlerPoint, err := findClosingBraceIndex(handlerContent, insertIndex)
+	if err != nil {
+		return errors.New("'Register handler point not found")
+	}
+
+	handlerContent = handlerContent[:registerHandlerPoint] + "\t" + handlerName + "Handler " + handlerName + "Handler\n\t" + handlerContent[registerHandlerPoint:]
+
+	err = copyDataToFile([]byte(handlerContent), cel.RootPath+"/handlers/handlers.go")
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func wireServiceAndHandler(handlerName string) error {
+	initAppData, err := os.ReadFile(cel.RootPath + "/init-app.go")
+	if err != nil {
+		return err
+	}
+	initAppContent := string(initAppData)
+
+	// Find the insertion point
+	insertIndex, err := findSubstringIndex(initAppContent, "myHandlers := &handlers.Handlers", 0)
+	if err != nil {
+		return errors.New("'return app' not found")
+	}
+
+	wireServiceContent := fmt.Sprintf(`
+	%sService := services.New%sServiceImpl(cel, models.%s)
+	%sHandler := handlers.New%sHandler(cel, %sService)`,
+		strings.ToLower(handlerName),
+		handlerName,
+		handlerName,
+		strings.ToLower(handlerName),
+		handlerName,
+		strings.ToLower(handlerName),
+	)
+
+	initAppContent = initAppContent[:insertIndex] + "\t\n" + wireServiceContent + "\n\n\t" + initAppContent[insertIndex:]
+
+	// Find the next closing curly brace after the insertion point
+	registerHandlerPoint, err := findClosingBraceIndex(initAppContent, insertIndex)
+	if err != nil {
+		return errors.New("'Register model point not found")
+	}
+
+	initAppContent = initAppContent[:registerHandlerPoint] + "\t" + handlerName + "Handler: " + strings.ToLower(handlerName) + "Handler,\n\t" + initAppContent[registerHandlerPoint:]
+
+	err = copyDataToFile([]byte(initAppContent), cel.RootPath+"/init-app.go")
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"os"
 	"strings"
 
@@ -56,11 +55,6 @@ func makeService(arg3 string) error {
 		return err
 	}
 
-	err = wireService(serviceName)
-	if err != nil {
-		return err
-	}
-
 	dtoData, err := templateFS.ReadFile("templates/dto/dto.go.txt")
 	if err != nil {
 		return err
@@ -101,60 +95,6 @@ func insertServiceInterface(serviceName string) error {
 	serviceContent += serviceInterfaceData
 
 	err = copyDataToFile([]byte(serviceContent), cel.RootPath+"/services/service.go")
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func wireService(serviceName string) error {
-	handlers, err := os.ReadFile(cel.RootPath + "/handlers/handlers.go")
-	if err != nil {
-		return err
-	}
-	handlersContent := string(handlers)
-
-	// Find the insertion point
-	startingPoint, err := findSubstringIndex(handlersContent, "Services struct", 0)
-	if err != nil {
-		return errors.New("'return Models' not found")
-	}
-
-	// Find the next closing curly brace after the insertion point
-	registerServicePoint, err := findClosingBraceIndex(handlersContent, startingPoint)
-	if err != nil {
-		return errors.New("'Register service point not found")
-	}
-
-	// Insert your text on a new line before the closing brace
-	handlersContent = handlersContent[:registerServicePoint] + "\t" + serviceName + " " + "services." + serviceName + "Service" + "\n\t" + handlersContent[registerServicePoint:]
-
-	err = copyDataToFile([]byte(handlersContent), cel.RootPath+"/handlers/handlers.go")
-	if err != nil {
-		return err
-	}
-
-	initAppData, err := os.ReadFile(cel.RootPath + "/init-app.go")
-	if err != nil {
-		return err
-	}
-	initAppContent := string(initAppData)
-
-	// Find the insertion point
-	insertIndex, err := findSubstringIndex(initAppContent, "return app", 0)
-	if err != nil {
-		return errors.New("'return app' not found")
-	}
-
-	wireServiceContent := fmt.Sprintf(`
-	%sService := services.New%sServiceImpl(app.App, models.%s)
-	myHandlers.Services.%s = %sService
-	`, strings.ToLower(serviceName), serviceName, serviceName, serviceName, strings.ToLower(serviceName))
-
-	initAppContent = initAppContent[:insertIndex] + "\t" + wireServiceContent + "\n\n\t" + initAppContent[insertIndex:]
-
-	err = copyDataToFile([]byte(initAppContent), cel.RootPath+"/init-app.go")
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,7 @@
+type $HANDLERNAME$Handler interface {
+	Create$HANDLERNAME$(w http.ResponseWriter, r *http.Request)
+	Update$HANDLERNAME$(w http.ResponseWriter, r *http.Request)
+	Delete$HANDLERNAME$(w http.ResponseWriter, r *http.Request)
+	Get$HANDLERNAME$ById(w http.ResponseWriter, r *http.Request)
+	Get$HANDLERNAME$List(w http.ResponseWriter, r *http.Request)
+}
