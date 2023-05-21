@@ -118,6 +118,11 @@ func addImportStatement(filename, importStatement string) error {
 	// Convert the content to a string
 	fileContent := string(content)
 
+	// Check if the import statement already exists in the file
+	if strings.Contains(fileContent, importStatement) {
+		return nil
+	}
+
 	// Check if the import block exists in the file
 	importBlockPattern := regexp.MustCompile(`import \([\s\S]*?\)`)
 	importBlockMatch := importBlockPattern.FindString(fileContent)
