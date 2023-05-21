@@ -49,6 +49,26 @@ func doAuth() error {
 		return err
 	}
 
+	err = insertServiceInterface("User")
+	if err != nil {
+		return err
+	}
+
+	userHandlerInterfaceData, err := buildHandlerInterfaceData("User")
+	if err != nil {
+		return err
+	}
+
+	err = insertHandlerInterface("User", userHandlerInterfaceData)
+	if err != nil {
+		return err
+	}
+
+	err = wireServiceAndHandler("User")
+	if err != nil {
+		return err
+	}
+
 	// copy over user model and register it in models
 	err = copyFilefromTemplate("templates/data/user.go.txt", cel.RootPath+"/data/user.go")
 	if err != nil {
@@ -95,12 +115,17 @@ func doAuth() error {
 		return err
 	}
 
-	err = insertHandlerInterface("User")
+	authHandlerInterface, err := templateFS.ReadFile("templates/handlers/auth-interface.go.txt")
 	if err != nil {
 		return err
 	}
 
-	err = wireServiceAndHandler("User")
+	err = insertHandlerInterface("Auth", string(authHandlerInterface))
+	if err != nil {
+		return err
+	}
+
+	err = wireServiceAndHandler("Auth")
 	if err != nil {
 		return err
 	}
@@ -129,6 +154,11 @@ func doAuth() error {
 	authService := string(authServiceFile)
 	authService = strings.ReplaceAll(authService, "$MODULENAME$", moduleName)
 	err = copyDataToFile([]byte(authService), cel.RootPath+"/services/auth.go")
+	if err != nil {
+		return err
+	}
+
+	err = insertServiceInterface("Auth")
 	if err != nil {
 		return err
 	}

@@ -48,7 +48,12 @@ func makeHandler(arg3 string) error {
 		return err
 	}
 
-	err = insertHandlerInterface(handlerName)
+	handlerInterfaceData, err := buildHandlerInterfaceData(handlerName)
+	if err != nil {
+		return err
+	}
+
+	err = insertHandlerInterface(handlerName, handlerInterfaceData)
 	if err != nil {
 		return err
 	}
@@ -70,18 +75,22 @@ func makeHandler(arg3 string) error {
 	return nil
 }
 
-func insertHandlerInterface(handlerName string) error {
+func buildHandlerInterfaceData(handlerName string) (string, error) {
+	handlerInterface, err := templateFS.ReadFile("templates/handlers/handler-interface.go.txt")
+	if err != nil {
+		return "", err
+	}
+	handlerInterfaceData := strings.ReplaceAll(string(handlerInterface), "$HANDLERNAME$", handlerName)
+
+	return handlerInterfaceData, nil
+}
+
+func insertHandlerInterface(handlerName, handlerInterfaceData string) error {
 	handlerdata, err := os.ReadFile(cel.RootPath + "/handlers/handlers.go")
 	if err != nil {
 		return err
 	}
 	handlerContent := string(handlerdata)
-
-	handlerInterface, err := templateFS.ReadFile("templates/handlers/handler-interface.go.txt")
-	if err != nil {
-		return err
-	}
-	handlerInterfaceData := strings.ReplaceAll(string(handlerInterface), "$HANDLERNAME$", handlerName)
 
 	handlerContent += handlerInterfaceData
 
