@@ -1,19 +1,34 @@
 package services
 
 import (
+	"$MODULENAME$/data"
 	"$MODULENAME$/dto"
 	"$MODULENAME$/errors"
+
+	"github.com/emirkosuta/celeritas"
 )
 
-func (h *Services) CreateUser(userInput dto.UserRegistrationDTO) (*dto.UserResponseDTO, error) {
-	_, err := h.Models.User.GetByEmail(userInput.Email)
+type userServiceImpl struct {
+	App  *celeritas.Celeritas
+	repo data.User
+}
+
+func NewUserServiceImpl(app *celeritas.Celeritas, repo data.User) UserService {
+	return &userServiceImpl{
+		App:  app,
+		repo: repo,
+	}
+}
+
+func (h *userServiceImpl) CreateUser(userInput dto.UserRegistrationDTO) (*dto.UserResponseDTO, error) {
+	_, err := h.repo.GetByEmail(userInput.Email)
 	if err == nil {
 		return nil, errors.ErrUserExists
 	}
 
 	u := userInput.ToUser()
 
-	id, err := h.Models.User.Insert(*u)
+	id, err := h.repo.Insert(*u)
 	if err != nil {
 		return nil, errors.ErrInternalServer
 	}
@@ -28,11 +43,11 @@ func (h *Services) CreateUser(userInput dto.UserRegistrationDTO) (*dto.UserRespo
 	return &response, nil
 }
 
-func (h *Services) UpdateUser(userId int, userInput dto.UserUpdateDTO) (*dto.UserResponseDTO, error) {
-	u, _ := h.Models.User.Get(userId)
+func (h *userServiceImpl) UpdateUser(userId int, userInput dto.UserUpdateDTO) (*dto.UserResponseDTO, error) {
+	u, _ := h.repo.Get(userId)
 	userInput.ToUser(u)
 
-	err := h.Models.User.Update(*u)
+	err := h.repo.Update(*u)
 	if err != nil {
 		return nil, errors.ErrInternalServer
 	}
@@ -42,8 +57,8 @@ func (h *Services) UpdateUser(userId int, userInput dto.UserUpdateDTO) (*dto.Use
 	return &response, nil
 }
 
-func (h *Services) DeleteUser(userId int) error {
-	err := h.Models.User.Delete(userId)
+func (h *userServiceImpl) DeleteUser(userId int) error {
+	err := h.repo.Delete(userId)
 	if err != nil {
 		h.App.ErrorLog.Println(err)
 		return errors.ErrInternalServer
@@ -52,8 +67,8 @@ func (h *Services) DeleteUser(userId int) error {
 	return nil
 }
 
-func (h *Services) GetUser(userId int) (*dto.UserResponseDTO, error) {
-	u, err := h.Models.User.Get(userId)
+func (h *userServiceImpl) GetUser(userId int) (*dto.UserResponseDTO, error) {
+	u, err := h.repo.Get(userId)
 	if err != nil {
 		h.App.ErrorLog.Println(err)
 		return nil, errors.ErrNotFound
@@ -63,8 +78,8 @@ func (h *Services) GetUser(userId int) (*dto.UserResponseDTO, error) {
 	return &response, nil
 }
 
-func (h *Services) GetUserList() ([]dto.UserResponseDTO, error) {
-	u, err := h.Models.User.GetAll()
+func (h *userServiceImpl) GetUserList() ([]dto.UserResponseDTO, error) {
+	u, err := h.repo.GetAll()
 	if err != nil {
 		h.App.ErrorLog.Println(err)
 		return nil, errors.ErrInternalServer

@@ -90,7 +90,17 @@ func doAuth() error {
 	}
 	authHandler := string(authHandlerFile)
 	authHandler = strings.ReplaceAll(authHandler, "$MODULENAME$", moduleName)
-	err = copyDataToFile([]byte(authHandler), cel.RootPath+"/handlers/auth-handlers.go")
+	err = copyDataToFile([]byte(authHandler), cel.RootPath+"/handlers/auth.go")
+	if err != nil {
+		return err
+	}
+
+	err = insertHandlerInterface("User")
+	if err != nil {
+		return err
+	}
+
+	err = wireServiceAndHandler("User")
 	if err != nil {
 		return err
 	}

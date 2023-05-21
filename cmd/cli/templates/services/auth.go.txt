@@ -4,17 +4,32 @@ import (
 	"fmt"
 	"net/url"
 
-	jwtdto "github.com/emirkosuta/celeritas/jwt/dto"
-	"github.com/emirkosuta/celeritas/mailer"
-	"github.com/emirkosuta/celeritas/urlsigner"
 	"$MODULENAME$/data"
 	"$MODULENAME$/dto"
 	"$MODULENAME$/errors"
+
+	"github.com/emirkosuta/celeritas"
+	jwtdto "github.com/emirkosuta/celeritas/jwt/dto"
+	"github.com/emirkosuta/celeritas/mailer"
+	"github.com/emirkosuta/celeritas/urlsigner"
 	"github.com/golang-jwt/jwt"
 )
 
-func (s *Services) Login(loginInput dto.LoginInput) (*jwtdto.Token, error) {
-	user, err := s.Models.User.GetByEmail(loginInput.Email)
+type authServiceImpl struct {
+	App      *celeritas.Celeritas
+	userRepo data.User
+	BaseService
+}
+
+func NewAuthServiceImpl(app *celeritas.Celeritas, userRepo data.User) AuthService {
+	return &authServiceImpl{
+		App:      app,
+		userRepo: userRepo,
+	}
+}
+
+func (s *authServiceImpl) Login(loginInput dto.LoginInput) (*jwtdto.Token, error) {
+	user, err := s.userRepo.GetByEmail(loginInput.Email)
 	if err != nil {
 		return nil, errors.ErrNotFound
 	}
@@ -33,7 +48,7 @@ func (s *Services) Login(loginInput dto.LoginInput) (*jwtdto.Token, error) {
 	return userToken, nil
 }
 
-func (s *Services) RefreshToken(userId int, refreshToken string, iat string) (*jwtdto.Token, error) {
+func (s *authServiceImpl) RefreshToken(userId int, refreshToken string, iat string) (*jwtdto.Token, error) {
 	t, err := s.App.Cache.Get(buildRefreshTokenKey(userId, iat))
 	if err != nil || t != refreshToken {
 		s.App.ErrorLog.Printf("Refresh token is revoked: %v", err)
@@ -55,7 +70,7 @@ func (s *Services) RefreshToken(userId int, refreshToken string, iat string) (*j
 	return newToken, nil
 }
 
-func (s *Services) Logout(userId int) error {
+func (s *authServiceImpl) Logout(userId int) error {
 	err := s.revokeAllRefreshTokens(userId)
 	if err != nil {
 		s.App.ErrorLog.Printf("Error revoking refresh token: %v", err)
@@ -65,7 +80,7 @@ func (s *Services) Logout(userId int) error {
 	return nil
 }
 
-func (s *Services) ForgotPassword(input dto.ForgotPassword) error {
+func (s *authServiceImpl) ForgotPassword(input dto.ForgotPassword) error {
 	// verify that supplied email exists
 	var u *data.User
 	u, err := u.GetByEmail(input.Email)
@@ -102,7 +117,7 @@ func (s *Services) ForgotPassword(input dto.ForgotPassword) error {
 	return nil
 }
 
-func (s *Services) ResetPasswordVerify(email, token string) (*dto.ResetPasswordVerifyResponse, error) {
+func (s *authServiceImpl) ResetPasswordVerify(email, token string) (*dto.ResetPasswordVerifyResponse, error) {
 	link := s.buildPasswordResetLink(email, token)
 
 	// validate the url
@@ -127,7 +142,7 @@ func (s *Services) ResetPasswordVerify(email, token string) (*dto.ResetPasswordV
 	return &response, nil
 }
 
-func (s *Services) ResetPassword(input dto.ResetPassword) error {
+func (s *authServiceImpl) ResetPassword(input dto.ResetPassword) error {
 	// get and decrypt the email
 	email, err := s.decrypt(input.EncryptedEmail)
 	if err != nil {
@@ -153,7 +168,7 @@ func (s *Services) ResetPassword(input dto.ResetPassword) error {
 	return nil
 }
 
-func (s *Services) buildPasswordResetLink(email string, hash string) string {
+func (s *authServiceImpl) buildPasswordResetLink(email string, hash string) string {
 	email = url.QueryEscape(email)
 	hash = url.QueryEscape(hash)
 
@@ -163,7 +178,7 @@ func (s *Services) buildPasswordResetLink(email string, hash string) string {
 	return fmt.Sprintf("%s/reset-password?email=%s", s.App.Frontend.URL, email)
 }
 
-func (s *Services) generateAndSaveToken(userID int) (*jwtdto.Token, error) {
+func (s *authServiceImpl) generateAndSaveToken(userID int) (*jwtdto.Token, error) {
 	userToken, err := s.App.JwtToken.Sign(jwt.MapClaims{
 		"id": userID,
 	})
@@ -185,14 +200,14 @@ func buildRefreshTokenKey(userID int, issuedAt string) string {
 	return fmt.Sprintf("refresh_token_%d_%s", userID, issuedAt)
 }
 
-func (s *Services) revokeRefreshToken(userID int, iat string) error {
+func (s *authServiceImpl) revokeRefreshToken(userID int, iat string) error {
 	err := s.App.Cache.Forget(
 		buildRefreshTokenKey(userID, iat),
 	)
 	return err
 }
 
-func (s *Services) revokeAllRefreshTokens(userID int) error {
+func (s *authServiceImpl) revokeAllRefreshTokens(userID int) error {
 	err := s.App.Cache.EmptyByMatch(
 		buildRefreshTokenKey(userID, ""),
 	)

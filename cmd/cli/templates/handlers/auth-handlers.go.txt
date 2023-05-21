@@ -9,12 +9,24 @@ import (
 	"$MODULENAME$/errors"
 )
 
-func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
+type authHandlerImpl struct {
+	App     *celeritas.Celeritas
+	service services.AuthService
+}
+
+func NewAuthHandler(app *celeritas.Celeritas, authService services.AuthService) AuthHandler {
+	return &authHandlerImpl{
+		App:     app,
+		service: authService,
+	}
+}
+
+func (h *authHandlerImpl) Login(w http.ResponseWriter, r *http.Request) {
 	var loginInput dto.LoginInput
 
 	h.App.ReadJSON(w, r, &loginInput)
 
-	token, err := h.Services.Login(loginInput)
+	token, err := h.service.Login(loginInput)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -34,13 +46,13 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	h.App.WriteDataResponse(w, http.StatusOK, "", token)
 }
 
-func (h *Handlers) RefreshToken(w http.ResponseWriter, r *http.Request) {
+func (h *authHandlerImpl) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	userIdString := r.Header.Get("id")
 	iat := r.Header.Get("iat")
 	refreshToken := r.Header.Get("refresh_token")
 	userId, _ := strconv.Atoi(userIdString)
 
-	token, err := h.Services.RefreshToken(userId, refreshToken, iat)
+	token, err := h.service.RefreshToken(userId, refreshToken, iat)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -60,11 +72,11 @@ func (h *Handlers) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	h.App.WriteDataResponse(w, http.StatusOK, "", token)
 }
 
-func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *authHandlerImpl) Logout(w http.ResponseWriter, r *http.Request) {
 	userIdString := r.Header.Get("id")
 	userId, _ := strconv.Atoi(userIdString)
 
-	err := h.Services.Logout(userId)
+	err := h.service.Logout(userId)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -73,11 +85,11 @@ func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
 	h.App.WriteSuccessResponse(w, http.StatusOK, "Successfully revoked tokens", nil)
 }
 
-func (h *Handlers) ForgotPassword(w http.ResponseWriter, r *http.Request) {
+func (h *authHandlerImpl) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	var forgotPasswordInput dto.ForgotPassword
 	h.App.ReadJSON(w, r, &forgotPasswordInput)
 
-	err := h.Services.ForgotPassword(forgotPasswordInput)
+	err := h.service.ForgotPassword(forgotPasswordInput)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -86,12 +98,12 @@ func (h *Handlers) ForgotPassword(w http.ResponseWriter, r *http.Request) {
 	h.App.WriteSuccessResponse(w, http.StatusOK, "Email sent")
 }
 
-func (h *Handlers) ResetPasswordVerify(w http.ResponseWriter, r *http.Request) {
+func (h *authHandlerImpl) ResetPasswordVerify(w http.ResponseWriter, r *http.Request) {
 	// get form values
 	email := r.URL.Query().Get("email")
 	token := r.URL.Query().Get("hash")
 
-	res, err := h.Services.ResetPasswordVerify(email, token)
+	res, err := h.service.ResetPasswordVerify(email, token)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
@@ -100,7 +112,7 @@ func (h *Handlers) ResetPasswordVerify(w http.ResponseWriter, r *http.Request) {
 	h.App.WriteDataResponse(w, http.StatusOK, "Reset password link verified", res)
 }
 
-func (h *Handlers) ResetPassword(w http.ResponseWriter, r *http.Request) {
+func (h *authHandlerImpl) ResetPassword(w http.ResponseWriter, r *http.Request) {
 	var input dto.ResetPassword
 	h.App.ReadJSON(w, r, &input)
 
@@ -110,7 +122,7 @@ func (h *Handlers) ResetPassword(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.Services.ResetPassword(input)
+	err := h.service.ResetPassword(input)
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
 		return
