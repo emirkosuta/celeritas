@@ -123,22 +123,30 @@ func addImportStatement(filename, importStatement string) error {
 
 	// If the import block exists, add the import statement inside it
 	if importBlockMatch != "" {
-		fileContent = strings.ReplaceAll(fileContent, importBlockMatch, importBlockMatch+"\n\t"+importStatement)
+		importBlockEnd := strings.Index(fileContent, "\n)")
+		fileContent = fileContent[:importBlockEnd] + "\n\t" + importStatement + fileContent[importBlockEnd:]
 	} else {
 		// If the import block doesn't exist, add a new import block
 		importIndex := strings.Index(fileContent, "import")
 		if importIndex == -1 {
 			// If there are no imports, create a new import block
-			fileContent = "import (\n\t" + importStatement + "\n)\n\n" + fileContent
+			importBlock := "import (\n"
+			importBlock += "\t" + importStatement + "\n"
+			importBlock += ")\n\n"
+			fileContent = importBlock + fileContent
 		} else {
-			// If there are existing imports, insert a new import block
-			fileContent = fileContent[:importIndex+len("import\n")] + "(\n\t" + importStatement + "\n)\n\n" + fileContent[importIndex+len("import\n"):]
+			// If there are existing imports, insert the import statement in a new import block
+			importBlockStart := importIndex + len("import")
+			importBlock := "\nimport (\n"
+			importBlock += "\t" + importStatement + "\n"
+			importBlock += ")\n\n"
+			fileContent = fileContent[:importBlockStart] + importBlock + fileContent[importBlockStart:]
 		}
 	}
 
-	err = os.WriteFile(filename, []byte(fileContent), 0644)
+	err = copyDataToFile([]byte(fileContent), filename)
 	if err != nil {
-		return fmt.Errorf("failed to write file: %v", err)
+		return err
 	}
 
 	return nil
