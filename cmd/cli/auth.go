@@ -198,7 +198,7 @@ func insertAuthInterfaces() error {
 	}
 
 	addImportStatement(cel.RootPath+"/services/service.go", `jwtdto "github.com/emirkosuta/celeritas/jwt/dto"`)
-	addImportStatement(cel.RootPath+"/services/service.go", moduleName+`"/dto"`)
+	addImportStatement(cel.RootPath+"/services/service.go", `"`+moduleName+`/dto"`)
 
 	return nil
 }

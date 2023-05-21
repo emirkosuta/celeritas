@@ -114,31 +114,34 @@ func addImportStatement(filename, importStatement string) error {
 		return fmt.Errorf("failed to read file: %v", err)
 	}
 
+	// Convert the content to a string
+	fileContent := string(content)
+
 	// Check if the import block exists in the file
 	importBlockPattern := regexp.MustCompile(`import \([\s\S]*?\)`)
-	importBlockMatches := importBlockPattern.FindAllIndex(content, -1)
+	importBlockMatch := importBlockPattern.FindString(fileContent)
 
 	// If the import block exists, add the import statement inside it
-	if len(importBlockMatches) > 0 {
-		importBlockStart := importBlockMatches[0][0]
-		content = append(content[:importBlockStart], append([]byte(importStatement+"\n"), content[importBlockStart:]...)...)
+	if importBlockMatch != "" {
+		importBlockStart := strings.Index(fileContent, importBlockMatch)
+		importBlockEnd := importBlockStart + len(importBlockMatch)
+		fileContent = fileContent[:importBlockEnd] + "\n\t" + importStatement + fileContent[importBlockEnd:]
 	} else {
 		// If the import block doesn't exist, add a new import block
-		importIndex := strings.Index(string(content), "import")
+		importIndex := strings.Index(fileContent, "import")
 		if importIndex == -1 {
 			// If there are no imports, add the import statement directly
-			content = append([]byte(importStatement+"\n"), content...)
+			fileContent = importStatement + "\n\n" + fileContent
 		} else {
 			// If there are existing imports, insert a new import block
-			content = append(content[:importIndex+len("import\n")], append([]byte(importStatement+"\n"), content[importIndex+len("import\n"):]...)...)
+			fileContent = fileContent[:importIndex+len("import\n")] + importStatement + "\n\n" + fileContent[importIndex+len("import\n"):]
 		}
 	}
 
-	err = os.WriteFile(filename, content, 0644)
+	err = os.WriteFile(filename, []byte(fileContent), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write file: %v", err)
 	}
 
 	return nil
-
 }
