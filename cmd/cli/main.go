@@ -123,18 +123,16 @@ func addImportStatement(filename, importStatement string) error {
 
 	// If the import block exists, add the import statement inside it
 	if importBlockMatch != "" {
-		importBlockStart := strings.Index(fileContent, importBlockMatch)
-		importBlockEnd := importBlockStart + len(importBlockMatch)
-		fileContent = fileContent[:importBlockEnd] + "\n\t" + importStatement + fileContent[importBlockEnd:]
+		fileContent = strings.ReplaceAll(fileContent, importBlockMatch, importBlockMatch+"\n\t"+importStatement)
 	} else {
 		// If the import block doesn't exist, add a new import block
 		importIndex := strings.Index(fileContent, "import")
 		if importIndex == -1 {
-			// If there are no imports, add the import statement directly
-			fileContent = importStatement + "\n\n" + fileContent
+			// If there are no imports, create a new import block
+			fileContent = "import (\n\t" + importStatement + "\n)\n\n" + fileContent
 		} else {
 			// If there are existing imports, insert a new import block
-			fileContent = fileContent[:importIndex+len("import\n")] + importStatement + "\n\n" + fileContent[importIndex+len("import\n"):]
+			fileContent = fileContent[:importIndex+len("import\n")] + "(\n\t" + importStatement + "\n)\n\n" + fileContent[importIndex+len("import\n"):]
 		}
 	}
 
