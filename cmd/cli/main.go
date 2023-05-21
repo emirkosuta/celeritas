@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/emirkosuta/celeritas"
@@ -113,23 +114,31 @@ func addImportStatement(filename, importStatement string) error {
 		return fmt.Errorf("failed to read file: %v", err)
 	}
 
-	// Check if the import statement already exists in the file
-	existingImport := false
-	for _, line := range strings.Split(string(content), "\n") {
-		if strings.Contains(line, importStatement) {
-			existingImport = true
-			break
+	// Check if the import block exists in the file
+	importBlockPattern := regexp.MustCompile(`import \([\s\S]*?\)`)
+	importBlockMatches := importBlockPattern.FindAllIndex(content, -1)
+
+	// If the import block exists, add the import statement inside it
+	if len(importBlockMatches) > 0 {
+		importBlockStart := importBlockMatches[0][0]
+		content = append(content[:importBlockStart], append([]byte(importStatement+"\n"), content[importBlockStart:]...)...)
+	} else {
+		// If the import block doesn't exist, add a new import block
+		importIndex := strings.Index(string(content), "import")
+		if importIndex == -1 {
+			// If there are no imports, add the import statement directly
+			content = append([]byte(importStatement+"\n"), content...)
+		} else {
+			// If there are existing imports, insert a new import block
+			content = append(content[:importIndex+len("import\n")], append([]byte(importStatement+"\n"), content[importIndex+len("import\n"):]...)...)
 		}
 	}
 
-	// If the import statement doesn't exist, add it to the file
-	if !existingImport {
-		content = append([]byte(importStatement+"\n"), content...)
-		err = copyDataToFile([]byte(content), filename)
-		if err != nil {
-			return fmt.Errorf("failed to write file: %v", err)
-		}
+	err = os.WriteFile(filename, content, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write file: %v", err)
 	}
 
 	return nil
+
 }
