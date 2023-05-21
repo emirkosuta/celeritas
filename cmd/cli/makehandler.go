@@ -113,7 +113,7 @@ func insertHandlerInterface(handlerName, handlerInterfaceData string) error {
 		return err
 	}
 
-	err = addImportStatement(cel.RootPath+"/handlers/handlers.go", "net/http")
+	err = addImportStatement(cel.RootPath+"/handlers/handlers.go", `"net/http"`)
 	if err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func wireServiceAndHandler(handlerName string, modelName string) error {
 		return err
 	}
 
-	err = addImportStatement(cel.RootPath+"/init-app.go", moduleName+"/services")
+	err = addImportStatement(cel.RootPath+"/init-app.go", `"`+moduleName+`/services"`)
 	if err != nil {
 		return err
 	}
