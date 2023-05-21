@@ -9,7 +9,7 @@ rt.Group(func(rt chi.Router) {
 			rt.Use(middleware.JwtVerifyToken)
 			rt.Post("/logout", handlers.AuthHandler.Logout)
 			rt.Get("/users/{id}", handlers.UserHandler.GetUserById)
-			rt.Get("/users", handlers.UserHandler.GetAllUsers)
+			rt.Get("/users", handlers.UserHandler.GetUserList)
 			rt.Put("/users/{id}", handlers.UserHandler.UpdateUser)
 			rt.Delete("/users/{id}", handlers.UserHandler.DeleteUser)
 		})

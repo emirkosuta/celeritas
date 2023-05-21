@@ -100,7 +100,7 @@ func (h *userHandlerImpl) GetUserById(w http.ResponseWriter, r *http.Request) {
 	h.App.WriteDataResponse(w, http.StatusOK, "", user)
 }
 
-func (h *userHandlerImpl) GetAllUsers(w http.ResponseWriter, r *http.Request) {
+func (h *userHandlerImpl) GetUserList(w http.ResponseWriter, r *http.Request) {
 	users, err := h.service.GetUserList()
 	if err != nil {
 		h.App.WriteErrorResponse(w, errors.MapErrorToStatusCode(err), err)
