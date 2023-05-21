@@ -1,6 +1,7 @@
 package services
 
 import (
+	"$MODULENAME$/data"
 	"$MODULENAME$/dto"
 	"$MODULENAME$/errors"
 

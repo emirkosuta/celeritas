@@ -34,6 +34,8 @@ func makeService(arg3 string) error {
 		tableName = strings.ToLower(plur.Plural(arg3))
 	}
 
+	serviceName = strcase.ToCamel(serviceName)
+
 	fileName := cel.RootPath + "/services/" + strings.ToLower(serviceName) + ".go"
 	if fileExists(fileName) {
 		return errors.New(fileName + " already exists!")
@@ -41,7 +43,7 @@ func makeService(arg3 string) error {
 
 	service := string(data)
 	service = strings.ReplaceAll(service, "$MODELNAME$", strcase.ToCamel(modelName))
-	service = strings.ReplaceAll(service, "$SERVICENAME$", strcase.ToCamel(serviceName))
+	service = strings.ReplaceAll(service, "$SERVICENAME$", serviceName)
 	service = strings.ReplaceAll(service, "$MODULENAME$", moduleName)
 
 	err = copyDataToFile([]byte(service), fileName)
@@ -49,7 +51,7 @@ func makeService(arg3 string) error {
 		return err
 	}
 
-	err = insertServiceInterface(strcase.ToCamel(serviceName))
+	err = insertServiceInterface(serviceName)
 	if err != nil {
 		return err
 	}
@@ -70,7 +72,7 @@ func makeService(arg3 string) error {
 	}
 
 	dto := string(dtoData)
-	dto = strings.ReplaceAll(dto, "$SERVICENAME$", strcase.ToCamel(serviceName))
+	dto = strings.ReplaceAll(dto, "$SERVICENAME$", serviceName)
 	dto = strings.ReplaceAll(dto, "$MODELNAME$", strcase.ToCamel(modelName))
 	dto = strings.ReplaceAll(dto, "$TABLENAME$", tableName)
 	dto = strings.ReplaceAll(dto, "$MODULENAME$", moduleName)
