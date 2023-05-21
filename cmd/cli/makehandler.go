@@ -113,6 +113,11 @@ func insertHandlerInterface(handlerName, handlerInterfaceData string) error {
 		return err
 	}
 
+	err = addImportStatement("handlers", "net/http")
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -151,6 +156,11 @@ func wireServiceAndHandler(handlerName string, modelName string) error {
 	initAppContent = initAppContent[:registerHandlerPoint] + "\t" + handlerName + "Handler: " + strings.ToLower(handlerName) + "Handler,\n\t" + initAppContent[registerHandlerPoint:]
 
 	err = copyDataToFile([]byte(initAppContent), cel.RootPath+"/init-app.go")
+	if err != nil {
+		return err
+	}
+
+	err = addImportStatement("init-app", moduleName+"/services")
 	if err != nil {
 		return err
 	}

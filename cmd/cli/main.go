@@ -2,7 +2,9 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
+	"strings"
 
 	"github.com/emirkosuta/celeritas"
 	"github.com/fatih/color"
@@ -102,4 +104,32 @@ func exitGracefully(err error, msg ...string) {
 	}
 
 	os.Exit(0)
+}
+
+func addImportStatement(filename, importStatement string) error {
+	// Read the content of the file
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		return fmt.Errorf("failed to read file: %v", err)
+	}
+
+	// Check if the import statement already exists in the file
+	existingImport := false
+	for _, line := range strings.Split(string(content), "\n") {
+		if strings.Contains(line, importStatement) {
+			existingImport = true
+			break
+		}
+	}
+
+	// If the import statement doesn't exist, add it to the file
+	if !existingImport {
+		content = append([]byte(importStatement+"\n"), content...)
+		err = copyDataToFile([]byte(content), filename)
+		if err != nil {
+			return fmt.Errorf("failed to write file: %v", err)
+		}
+	}
+
+	return nil
 }

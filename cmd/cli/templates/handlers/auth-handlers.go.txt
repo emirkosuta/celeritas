@@ -7,6 +7,9 @@ import (
 
 	"$MODULENAME$/dto"
 	"$MODULENAME$/errors"
+	"newauth/services"
+
+	"github.com/emirkosuta/celeritas"
 )
 
 type authHandlerImpl struct {
