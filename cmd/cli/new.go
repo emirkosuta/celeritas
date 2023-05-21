@@ -117,16 +117,6 @@ func doNew(appName string) error {
 		return err
 	}
 
-	// create empty migrations and dto directories
-	err = cel.CreateDirIfNotExist(cel.RootPath + "/dto")
-	if err != nil {
-		return err
-	}
-	err = cel.CreateDirIfNotExist(cel.RootPath + "/migrations")
-	if err != nil {
-		return err
-	}
-
 	// update existing .go files with correct name/imports
 	color.Yellow("\tUpdating source files...")
 	os.Chdir("./" + appName)
