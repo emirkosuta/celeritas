@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -109,7 +110,7 @@ func exitGracefully(err error, msg ...string) {
 
 func addImportStatement(filename, importStatement string) error {
 	// Read the content of the file
-	content, err := os.ReadFile(filename)
+	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return fmt.Errorf("failed to read file: %v", err)
 	}
@@ -129,11 +130,9 @@ func addImportStatement(filename, importStatement string) error {
 		// If the import block doesn't exist, add a new import block
 		importIndex := strings.Index(fileContent, "import")
 		if importIndex == -1 {
-			// If there are no imports, create a new import block
-			importBlock := "import (\n"
-			importBlock += "\t" + importStatement + "\n"
-			importBlock += ")\n\n"
-			fileContent = importBlock + fileContent
+			// If there are no imports, add the import statement after the package declaration
+			packageEnd := strings.Index(fileContent, "\n\n") + 1
+			fileContent = fileContent[:packageEnd] + "import (\n\t" + importStatement + "\n)\n\n" + fileContent[packageEnd:]
 		} else {
 			// If there are existing imports, insert the import statement in a new import block
 			importBlockStart := importIndex + len("import")
