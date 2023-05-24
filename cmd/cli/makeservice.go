@@ -99,5 +99,7 @@ func insertServiceInterface(serviceName string) error {
 		return err
 	}
 
+	addImportStatement(cel.RootPath+"/services/service.go", "\""+moduleName+"/dto\"")
+
 	return nil
 }
