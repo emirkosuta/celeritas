@@ -145,7 +145,21 @@ func wireServiceAndHandler(handlerName string, modelName string) error {
 		strings.ToLower(handlerName),
 	)
 
-	initAppContent = initAppContent[:insertIndex] + "\t" + wireServiceContent + "\n\n\t" + initAppContent[insertIndex:]
+	if isModelsInitialized(initAppContent) {
+		initAppContent = initAppContent[:insertIndex] +
+			"\t" + wireServiceContent +
+			"\n\n\t" + initAppContent[insertIndex:]
+	} else {
+		initAppContent = initAppContent[:insertIndex] +
+			"\n\t" + initModels +
+			"\n\t" + wireServiceContent +
+			"\n\n\t" + initAppContent[insertIndex:]
+
+		err = addImportStatement(cel.RootPath+"/init-app.go", "\""+moduleName+"/data\"")
+		if err != nil {
+			return err
+		}
+	}
 
 	// Find the next closing curly brace after the insertion point
 	registerHandlerPoint, err := findClosingBraceIndex(initAppContent, insertIndex)

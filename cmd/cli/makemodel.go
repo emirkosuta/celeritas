@@ -9,6 +9,8 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+const initModels = "models := data.New(cel.DB.Pool)"
+
 func doModel(arg3 string) error {
 	if arg3 == "" {
 		return errors.New("you must give the model a name")
@@ -58,6 +60,10 @@ func doModel(arg3 string) error {
 	}
 
 	return nil
+}
+
+func isModelsInitialized(initApp string) bool {
+	return strings.Contains(initApp, initModels)
 }
 
 func findClosingBraceIndex(content string, fromIndex int) (int, error) {
