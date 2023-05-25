@@ -15,5 +15,10 @@ build_cli:
 	@go build -o ../myapp/celeritas ./cmd/cli
 
 ## build: builds the command line tool to dist directory
-build:
-	@go build -o ./dist/celeritas ./cmd/cli
+build: build_windows build_linux
+
+build_windows:
+	@GOOS=windows GOARCH=amd64 go build -o ./dist/cli.exe ./cmd/cli
+
+build_linux:
+	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./dist/cli ./cmd/cli
