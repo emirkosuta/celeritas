@@ -15,7 +15,7 @@ import (
 // $HANDLERNAME$Handler is a concrete type that implements $HANDLERNAME$Handler
 type $LOWERCASEHANDLER$HandlerImpl struct {
 	App     *celeritas.Celeritas
-	service services.CarService
+	service services.$HANDLERNAME$Service
 }
 
 // New$HANDLERNAME$Handler initializes a new $HANDLERNAME$Handler with its dependencies

@@ -145,7 +145,7 @@ func wireServiceAndHandler(handlerName string, modelName string) error {
 		strings.ToLower(handlerName),
 	)
 
-	initAppContent = initAppContent[:insertIndex] + "\t\n" + wireServiceContent + "\n\n\t" + initAppContent[insertIndex:]
+	initAppContent = initAppContent[:insertIndex] + "\t" + wireServiceContent + "\n\n\t" + initAppContent[insertIndex:]
 
 	// Find the next closing curly brace after the insertion point
 	registerHandlerPoint, err := findClosingBraceIndex(initAppContent, insertIndex)
