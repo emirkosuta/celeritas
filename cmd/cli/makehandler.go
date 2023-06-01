@@ -137,12 +137,12 @@ func wireServiceAndHandler(handlerName string, modelName string) error {
 	wireServiceContent := fmt.Sprintf(`
 	%sService := services.New%sServiceImpl(cel, models.%s)
 	%sHandler := handlers.New%sHandler(cel, %sService)`,
-		strings.ToLower(handlerName),
+		handlerName,
 		handlerName,
 		modelName,
-		strings.ToLower(handlerName),
 		handlerName,
-		strings.ToLower(handlerName),
+		handlerName,
+		handlerName,
 	)
 
 	if isModelsInitialized(initAppContent) {
@@ -167,7 +167,7 @@ func wireServiceAndHandler(handlerName string, modelName string) error {
 		return errors.New("'Register model point not found")
 	}
 
-	initAppContent = initAppContent[:registerHandlerPoint] + "\t" + handlerName + "Handler: " + strings.ToLower(handlerName) + "Handler,\n\t" + initAppContent[registerHandlerPoint:]
+	initAppContent = initAppContent[:registerHandlerPoint] + "\t" + handlerName + "Handler: " + handlerName + "Handler,\n\t" + initAppContent[registerHandlerPoint:]
 
 	err = copyDataToFile([]byte(initAppContent), cel.RootPath+"/init-app.go")
 	if err != nil {

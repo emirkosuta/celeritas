@@ -34,6 +34,11 @@ func doMigrate(arg2, arg3 string) error {
 		if err != nil {
 			return err
 		}
+	case "force":
+		err := cel.MigrateForce(dsn)
+		if err != nil {
+			return err
+		}
 	default:
 		return errors.New(`Arg "` + arg2 + `" is not supported.`)
 	}
